@@ -24,6 +24,16 @@ char gestureStrings[100][32];
 int currentGesture = GESTURE_NONE;
 int lastGesture = GESTURE_NONE;
 
+static void add_log_text(const char* title){
+    if (gesturesCount >= MAX_GESTURE_STRINGS)
+    {
+        for (int i = 0; i < MAX_GESTURE_STRINGS; i++) TextCopy(gestureStrings[i], "\0");
+        gesturesCount = 0;
+    }
+    TextCopy(gestureStrings[gesturesCount], title);
+    gesturesCount++;
+}
+
 void ios_ready(){
     InitWindow(0, 0, "raylib [core] example - input gestures");
     
@@ -38,24 +48,16 @@ void ios_ready(){
     MAX_GESTURE_STRINGS = (screenHeight - 50) / 20;
 }
 
-static void add_gesture(const char* title){
-    if (gesturesCount >= MAX_GESTURE_STRINGS)
-    {
-        for (int i = 0; i < MAX_GESTURE_STRINGS; i++) TextCopy(gestureStrings[i], "\0");
-        gesturesCount = 0;
-    }
-    TextCopy(gestureStrings[gesturesCount], title);
-    gesturesCount++;
-}
-
-void ios_update()
+void ios_update(bool viewSizeChanged)
 {
+    if(viewSizeChanged) add_log_text(TextFormat("ViewSizeChanged %d x %d", GetMonitorWidth(0), GetMonitorHeight(0)));
+
     lastGesture = currentGesture;
     currentGesture = GetGestureDetected();
     touchPosition = GetTouchPosition(0);
 
-    if(IsMouseButtonPressed(0)) add_gesture("MouseButtonPressed");
-    if(IsMouseButtonReleased(0)) add_gesture("MouseButtonReleased");
+    if(IsMouseButtonPressed(0)) add_log_text("MouseButtonPressed");
+    if(IsMouseButtonReleased(0)) add_log_text("MouseButtonReleased");
 
     if (CheckCollisionPointRec(touchPosition, touchArea) && (currentGesture != GESTURE_NONE))
     {
@@ -64,16 +66,16 @@ void ios_update()
             // Store gesture string
             switch (currentGesture)
             {
-                case GESTURE_TAP: add_gesture( "GESTURE TAP"); break;
-                case GESTURE_DOUBLETAP: add_gesture( "GESTURE DOUBLETAP"); break;
-                case GESTURE_HOLD: add_gesture( "GESTURE HOLD"); break;
-                case GESTURE_DRAG: add_gesture( "GESTURE DRAG"); break;
-                case GESTURE_SWIPE_RIGHT: add_gesture( "GESTURE SWIPE RIGHT"); break;
-                case GESTURE_SWIPE_LEFT: add_gesture( "GESTURE SWIPE LEFT"); break;
-                case GESTURE_SWIPE_UP: add_gesture( "GESTURE SWIPE UP"); break;
-                case GESTURE_SWIPE_DOWN: add_gesture( "GESTURE SWIPE DOWN"); break;
-                case GESTURE_PINCH_IN: add_gesture( "GESTURE PINCH IN"); break;
-                case GESTURE_PINCH_OUT: add_gesture( "GESTURE PINCH OUT"); break;
+                case GESTURE_TAP: add_log_text( "GESTURE TAP"); break;
+                case GESTURE_DOUBLETAP: add_log_text( "GESTURE DOUBLETAP"); break;
+                case GESTURE_HOLD: add_log_text( "GESTURE HOLD"); break;
+                case GESTURE_DRAG: add_log_text( "GESTURE DRAG"); break;
+                case GESTURE_SWIPE_RIGHT: add_log_text( "GESTURE SWIPE RIGHT"); break;
+                case GESTURE_SWIPE_LEFT: add_log_text( "GESTURE SWIPE LEFT"); break;
+                case GESTURE_SWIPE_UP: add_log_text( "GESTURE SWIPE UP"); break;
+                case GESTURE_SWIPE_DOWN: add_log_text( "GESTURE SWIPE DOWN"); break;
+                case GESTURE_PINCH_IN: add_log_text( "GESTURE PINCH IN"); break;
+                case GESTURE_PINCH_OUT: add_log_text( "GESTURE PINCH OUT"); break;
                 default: break;
             }
         }

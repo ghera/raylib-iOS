@@ -307,7 +307,7 @@ Vector2 GetWindowPosition(void)
 // Get window scale DPI factor for current monitor
 Vector2 GetWindowScaleDPI(void)
 {
-    CGFloat scale = [[UIScreen mainScreen] scale];
+    CGFloat scale = [[UIScreen mainScreen] nativeScale];
     return (Vector2){ scale, scale };
 }
 
@@ -464,6 +464,18 @@ void PollInputEvents(void)
 // Module Internal Functions Definition
 //----------------------------------------------------------------------------------
 
+void SetupWindowSizes(int width, int height) {
+    Vector2 scale = GetWindowScaleDPI();
+    CORE.Window.screen.width = width;
+    CORE.Window.screen.height = height;
+    CORE.Window.display.width = CORE.Window.screen.width * scale.x;
+    CORE.Window.display.height = CORE.Window.screen.height * scale.y;
+    CORE.Window.render.width = CORE.Window.screen.width;
+    CORE.Window.render.height = CORE.Window.screen.height;
+    CORE.Window.currentFbo.width = CORE.Window.screen.width;
+    CORE.Window.currentFbo.height = CORE.Window.screen.height;
+}
+
 // Initialize platform: graphics, inputs and more
 int InitPlatform(void)
 {
@@ -553,20 +565,9 @@ int InitPlatform(void)
     }
     else
     {
-        CORE.Window.display.width = [[UIScreen mainScreen] nativeBounds].size.width;
-        CORE.Window.display.height = [[UIScreen mainScreen] nativeBounds].size.height;
-        if(CORE.Window.screen.width == 0){
-            CORE.Window.screen.width = [[UIScreen mainScreen] bounds].size.width;
-        }
-        if(CORE.Window.screen.height == 0){
-            CORE.Window.screen.height = [[UIScreen mainScreen] bounds].size.height;
-        }
+        CGSize screenSize = [[UIScreen mainScreen] bounds].size;
+        SetupWindowSizes(screenSize.width, screenSize.height);
         
-        CORE.Window.render.width = CORE.Window.screen.width;
-        CORE.Window.render.height = CORE.Window.screen.height;
-        CORE.Window.currentFbo.width = CORE.Window.render.width;
-        CORE.Window.currentFbo.height = CORE.Window.render.height;
-
         TRACELOG(LOG_INFO, "DISPLAY: Device initialized successfully");
         TRACELOG(LOG_INFO, "    > Display size: %i x %i", CORE.Window.display.width, CORE.Window.display.height);
         TRACELOG(LOG_INFO, "    > Screen size:  %i x %i", CORE.Window.screen.width, CORE.Window.screen.height);
@@ -584,9 +585,12 @@ int InitPlatform(void)
     // NOTE: CORE.Window.currentFbo.width and CORE.Window.currentFbo.height not used, just stored as globals in rlgl
     rlglInit(CORE.Window.currentFbo.width, CORE.Window.currentFbo.height);
 
+    LoadFontDefault();
+    
     // Setup default viewport
     // NOTE: It updated CORE.Window.render.width and CORE.Window.render.height
     SetupViewport(CORE.Window.currentFbo.width, CORE.Window.currentFbo.height);
+    
     InitTimer();
     CORE.Storage.basePath = GetWorkingDirectory();
     TRACELOG(LOG_INFO, "PLATFORM: IOS: Initialized successfully");
@@ -620,6 +624,25 @@ void ClosePlatform(void)
     }
 }
 
+void RecreatePlatformSurface(void *layer, int width, int height)
+{
+    if (platform.surface != EGL_NO_SURFACE) {
+        eglDestroySurface(platform.device, platform.surface);
+    }
+
+    platform.surface = eglCreateWindowSurface(platform.device, platform.config, layer, NULL);
+    eglMakeCurrent(platform.device, platform.surface, platform.surface, platform.context);
+
+    SetupWindowSizes(width, height);
+
+    SetupViewport(CORE.Window.currentFbo.width, CORE.Window.currentFbo.height);
+
+    TRACELOG(LOG_INFO, "SIZE CHANGED: Surface recreated. New size: %d x %d", width, height);
+    
+    ios_update(true);
+}
+
+// MARK: - GameViewController implementation
 
 @implementation GameViewController
 
@@ -630,6 +653,14 @@ void ClosePlatform(void)
     platform.viewController = self;
     self.view.multipleTouchEnabled = true;
     self.view.contentScaleFactor = [[UIScreen mainScreen] scale];
+}
+
+- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator
+{
+    [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
+    [coordinator animateAlongsideTransition:nil completion:^(id<UIViewControllerTransitionCoordinatorContext> context) {
+        RecreatePlatformSurface((__bridge void *)self.view.layer, (int)size.width, (int)size.height);
+    }];
 }
 
 - (bool)prefersStatusBarHidden
