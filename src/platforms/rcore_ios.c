@@ -470,10 +470,11 @@ void SetupWindowSizes(int width, int height) {
     CORE.Window.screen.height = height;
     CORE.Window.display.width = CORE.Window.screen.width * scale.x;
     CORE.Window.display.height = CORE.Window.screen.height * scale.y;
-    CORE.Window.render.width = CORE.Window.screen.width;
-    CORE.Window.render.height = CORE.Window.screen.height;
-    CORE.Window.currentFbo.width = CORE.Window.screen.width;
-    CORE.Window.currentFbo.height = CORE.Window.screen.height;
+    CORE.Window.render.width = CORE.Window.display.width;
+    CORE.Window.render.height = CORE.Window.display.height;
+    CORE.Window.currentFbo.width = CORE.Window.display.width;
+    CORE.Window.currentFbo.height = CORE.Window.display.height;
+    CORE.Window.screenScale = MatrixScale(scale.x, scale.y, 1.0f);
 }
 
 // Initialize platform: graphics, inputs and more
