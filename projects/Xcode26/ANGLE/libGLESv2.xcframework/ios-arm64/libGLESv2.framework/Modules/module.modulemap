@@ -1,0 +1,6 @@
+framework module libGLESv2 {
+  umbrella header "libGLESv2.h"
+  
+  export *
+  module * { export * }
+}

@@ -1,0 +1,6 @@
+framework module libEGL {
+  umbrella header "libEGL.h"
+  
+  export *
+  module * { export * }
+}
