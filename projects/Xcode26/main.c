@@ -50,14 +50,19 @@ void ios_ready(){
 
 void ios_update(bool viewSizeChanged)
 {
-    if(viewSizeChanged) add_log_text(TextFormat("ViewSizeChanged %d x %d", GetMonitorWidth(0), GetMonitorHeight(0)));
+    if (viewSizeChanged) {
+        screenWidth = GetScreenWidth();
+        screenHeight = GetScreenHeight();
+        touchArea = (Rectangle){ 220, 10, screenWidth - 230.0f, screenHeight - 20.0f };
+        add_log_text(TextFormat("ViewSizeChanged %d x %d", GetMonitorWidth(0), GetMonitorHeight(0)));
+    }
 
     lastGesture = currentGesture;
     currentGesture = GetGestureDetected();
     touchPosition = GetTouchPosition(0);
 
-    if(IsMouseButtonPressed(0)) add_log_text("MouseButtonPressed");
-    if(IsMouseButtonReleased(0)) add_log_text("MouseButtonReleased");
+    if (IsMouseButtonPressed(0)) add_log_text("MouseButtonPressed");
+    if (IsMouseButtonReleased(0)) add_log_text("MouseButtonReleased");
 
     if (CheckCollisionPointRec(touchPosition, touchArea) && (currentGesture != GESTURE_NONE))
     {
