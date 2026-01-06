@@ -3,17 +3,10 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 90;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		1BF3FCDE2BAF1C1800D3B043 /* libEGL.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B16D9042BAEDC41001FD5E0 /* libEGL.xcframework */; };
-		1BF3FCDF2BAF1C1800D3B043 /* libEGL.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 1B16D9042BAEDC41001FD5E0 /* libEGL.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		1BF3FCE02BAF1C1800D3B043 /* libGLESv2.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B16D9032BAEDC41001FD5E0 /* libGLESv2.xcframework */; };
-		1BF3FCE12BAF1C1800D3B043 /* libGLESv2.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 1B16D9032BAEDC41001FD5E0 /* libGLESv2.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		1BF3FCE62BAF1C3000D3B043 /* AVFAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BF3FCE42BAF1C3000D3B043 /* AVFAudio.framework */; };
-		1BF3FCE72BAF1C3000D3B043 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BF3FCE52BAF1C3000D3B043 /* AVFoundation.framework */; };
-		1BF3FCE92BAF1C3800D3B043 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BF3FCE82BAF1C3800D3B043 /* Foundation.framework */; };
 		1BF3FCF12BAF1D3300D3B043 /* raudio.c in Sources */ = {isa = PBXBuildFile; fileRef = 1BF3FCEA2BAF1D3300D3B043 /* raudio.c */; };
 		1BF3FCF22BAF1D3300D3B043 /* utils.c in Sources */ = {isa = PBXBuildFile; fileRef = 1BF3FCEB2BAF1D3300D3B043 /* utils.c */; };
 		1BF3FCF32BAF1D3300D3B043 /* rshapes.c in Sources */ = {isa = PBXBuildFile; fileRef = 1BF3FCEC2BAF1D3300D3B043 /* rshapes.c */; };
@@ -22,26 +15,26 @@
 		1BF3FCF62BAF1D3300D3B043 /* rtext.c in Sources */ = {isa = PBXBuildFile; fileRef = 1BF3FCEF2BAF1D3300D3B043 /* rtext.c */; };
 		1BF3FCF72BAF1D3300D3B043 /* rmodels.c in Sources */ = {isa = PBXBuildFile; fileRef = 1BF3FCF02BAF1D3300D3B043 /* rmodels.c */; };
 		1BF3FCFD2BAF2CFD00D3B043 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 1BF3FCFC2BAF2CFD00D3B043 /* main.c */; };
+		7EBA69492F0D324E00831340 /* libEGL.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7EBA69452F0D324100831340 /* libEGL.xcframework */; };
+		7EBA694A2F0D324E00831340 /* libEGL.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 7EBA69452F0D324100831340 /* libEGL.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		7EBA694B2F0D325000831340 /* libGLESv2.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7EBA69462F0D324100831340 /* libGLESv2.xcframework */; };
+		7EBA694C2F0D325000831340 /* libGLESv2.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 7EBA69462F0D324100831340 /* libGLESv2.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
 		1BF3FCE22BAF1C1900D3B043 /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
 			dstPath = "";
-			dstSubfolderSpec = 10;
+			dstSubfolder = Frameworks;
 			files = (
-				1BF3FCE12BAF1C1800D3B043 /* libGLESv2.xcframework in Embed Frameworks */,
-				1BF3FCDF2BAF1C1800D3B043 /* libEGL.xcframework in Embed Frameworks */,
+				7EBA694C2F0D325000831340 /* libGLESv2.xcframework in Embed Frameworks */,
+				7EBA694A2F0D324E00831340 /* libEGL.xcframework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		1B16D9032BAEDC41001FD5E0 /* libGLESv2.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = libGLESv2.xcframework; sourceTree = "<group>"; };
-		1B16D9042BAEDC41001FD5E0 /* libEGL.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = libEGL.xcframework; sourceTree = "<group>"; };
 		1BF3FCC32BAF1BC900D3B043 /* raylib.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = raylib.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1BF3FCE42BAF1C3000D3B043 /* AVFAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFAudio.framework; path = System/Library/Frameworks/AVFAudio.framework; sourceTree = SDKROOT; };
 		1BF3FCE52BAF1C3000D3B043 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
@@ -54,20 +47,18 @@
 		1BF3FCEF2BAF1D3300D3B043 /* rtext.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = rtext.c; path = ../../../src/rtext.c; sourceTree = "<group>"; };
 		1BF3FCF02BAF1D3300D3B043 /* rmodels.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = rmodels.c; path = ../../../src/rmodels.c; sourceTree = "<group>"; };
 		1BF3FCFC2BAF2CFD00D3B043 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
+		7EBA69422F0D2F0000831340 /* rcore_ios.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = rcore_ios.c; path = "/Users/Shared/FeliXStudio/raylib-iOS/src/platforms/rcore_ios.c"; sourceTree = "<absolute>"; };
+		7EBA69452F0D324100831340 /* libEGL.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = libEGL.xcframework; sourceTree = "<group>"; };
+		7EBA69462F0D324100831340 /* libGLESv2.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = libGLESv2.xcframework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		1BF3FCC02BAF1BC900D3B043 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
-				1BF3FCE92BAF1C3800D3B043 /* Foundation.framework in Frameworks */,
-				1BF3FCE72BAF1C3000D3B043 /* AVFoundation.framework in Frameworks */,
-				1BF3FCE62BAF1C3000D3B043 /* AVFAudio.framework in Frameworks */,
-				1BF3FCE02BAF1C1800D3B043 /* libGLESv2.xcframework in Frameworks */,
-				1BF3FCDE2BAF1C1800D3B043 /* libEGL.xcframework in Frameworks */,
+				7EBA694B2F0D325000831340 /* libGLESv2.xcframework in Frameworks */,
+				7EBA69492F0D324E00831340 /* libEGL.xcframework in Frameworks */,
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
@@ -76,6 +67,7 @@
 			isa = PBXGroup;
 			children = (
 				1BF3FCFC2BAF2CFD00D3B043 /* main.c */,
+				7EBA69392F0D2AA900831340 /* ANGLE */,
 				1BF3FCC42BAF1BC900D3B043 /* raylib */,
 				1B16D8F92BAEDBEA001FD5E0 /* Products */,
 				1BF3FCE32BAF1C3000D3B043 /* Frameworks */,
@@ -90,26 +82,17 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		1B16D9022BAEDC1C001FD5E0 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				1B16D9042BAEDC41001FD5E0 /* libEGL.xcframework */,
-				1B16D9032BAEDC41001FD5E0 /* libGLESv2.xcframework */,
-			);
-			path = Frameworks;
-			sourceTree = "<group>";
-		};
 		1BF3FCC42BAF1BC900D3B043 /* raylib */ = {
 			isa = PBXGroup;
 			children = (
 				1BF3FCEA2BAF1D3300D3B043 /* raudio.c */,
+				7EBA69422F0D2F0000831340 /* rcore_ios.c */,
 				1BF3FCEE2BAF1D3300D3B043 /* rcore.c */,
 				1BF3FCF02BAF1D3300D3B043 /* rmodels.c */,
 				1BF3FCEC2BAF1D3300D3B043 /* rshapes.c */,
 				1BF3FCEF2BAF1D3300D3B043 /* rtext.c */,
 				1BF3FCED2BAF1D3300D3B043 /* rtextures.c */,
 				1BF3FCEB2BAF1D3300D3B043 /* utils.c */,
-				1B16D9022BAEDC1C001FD5E0 /* Frameworks */,
 			);
 			path = raylib;
 			sourceTree = "<group>";
@@ -122,6 +105,15 @@
 				1BF3FCE52BAF1C3000D3B043 /* AVFoundation.framework */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		7EBA69392F0D2AA900831340 /* ANGLE */ = {
+			isa = PBXGroup;
+			children = (
+				7EBA69452F0D324100831340 /* libEGL.xcframework */,
+				7EBA69462F0D324100831340 /* libGLESv2.xcframework */,
+			);
+			path = ANGLE;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -138,8 +130,6 @@
 			);
 			buildRules = (
 			);
-			dependencies = (
-			);
 			name = raylib;
 			productName = raylib;
 			productReference = 1BF3FCC32BAF1BC900D3B043 /* raylib.app */;
@@ -152,7 +142,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastUpgradeCheck = 1520;
+				LastUpgradeCheck = 2610;
 				TargetAttributes = {
 					1BF3FCC22BAF1BC900D3B043 = {
 						CreatedOnToolsVersion = 15.2;
@@ -160,7 +150,6 @@
 				};
 			};
 			buildConfigurationList = 1B16D8F22BAEDBEA001FD5E0 /* Build configuration list for PBXProject "raylib" */;
-			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -168,6 +157,7 @@
 				Base,
 			);
 			mainGroup = 1B16D8EE2BAEDBEA001FD5E0;
+			preferredProjectObjectVersion = 90;
 			productRefGroup = 1B16D8F92BAEDBEA001FD5E0 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -180,17 +170,14 @@
 /* Begin PBXResourcesBuildPhase section */
 		1BF3FCC12BAF1BC900D3B043 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		1BF3FCBF2BAF1BC900D3B043 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 				1BF3FCF32BAF1D3300D3B043 /* rshapes.c in Sources */,
 				1BF3FCF12BAF1D3300D3B043 /* raudio.c in Sources */,
@@ -201,15 +188,13 @@
 				1BF3FCF22BAF1D3300D3B043 /* utils.c in Sources */,
 				1BF3FCF72BAF1D3300D3B043 /* rmodels.c in Sources */,
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
-		1B16D8FD2BAEDBEA001FD5E0 /* Debug */ = {
+		1B16D8FD2BAEDBEA001FD5E0 /* Debug configuration for PBXProject "raylib" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
@@ -242,6 +227,7 @@
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = A7A93GC9AY;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -259,21 +245,20 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
-				VERSIONING_SYSTEM = "apple-generic";
-				VERSION_INFO_PREFIX = "";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				USER_HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/../../src";
 			};
 			name = Debug;
 		};
-		1B16D8FE2BAEDBEA001FD5E0 /* Release */ = {
+		1B16D8FE2BAEDBEA001FD5E0 /* Release configuration for PBXProject "raylib" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
@@ -303,9 +288,10 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				COPY_PHASE_STRIP = NO;
+				COPY_PHASE_STRIP = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = A7A93GC9AY;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -317,30 +303,27 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				USER_HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/../../src";
 				VALIDATE_PRODUCT = YES;
-				VERSIONING_SYSTEM = "apple-generic";
-				VERSION_INFO_PREFIX = "";
 			};
 			name = Release;
 		};
-		1BF3FCDC2BAF1BCB00D3B043 /* Debug */ = {
+		1BF3FCDC2BAF1BCB00D3B043 /* Debug configuration for PBXNativeTarget "raylib" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_WARN_COMMA = NO;
 				CLANG_WARN_STRICT_PROTOTYPES = NO;
 				CLANG_WARN_UNREACHABLE_CODE = NO;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = A7A93GC9AY;
-				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					GRAPHICS_API_OPENGL_ES3,
@@ -350,43 +333,39 @@
 				GCC_WARN_64_TO_32_BIT_CONVERSION = NO;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.games";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = "";
 				INFOPLIST_KEY_UIRequiredDeviceCapabilities = metal;
 				INFOPLIST_KEY_UIRequiresFullScreen = YES;
 				INFOPLIST_KEY_UIStatusBarHidden = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)";
 				MARKETING_VERSION = 1.0;
-				OTHER_LDFLAGS = "-lc++";
 				PRODUCT_BUNDLE_IDENTIFIER = com.example.raylib;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				USER_HEADER_SEARCH_PATHS = ../../src;
+				USER_HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/../../src";
 			};
 			name = Debug;
 		};
-		1BF3FCDD2BAF1BCB00D3B043 /* Release */ = {
+		1BF3FCDD2BAF1BCB00D3B043 /* Release configuration for PBXNativeTarget "raylib" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_WARN_COMMA = NO;
 				CLANG_WARN_STRICT_PROTOTYPES = NO;
 				CLANG_WARN_UNREACHABLE_CODE = NO;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = A7A93GC9AY;
-				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					GRAPHICS_API_OPENGL_ES3,
 					PLATFORM_IOS,
@@ -395,27 +374,26 @@
 				GCC_WARN_64_TO_32_BIT_CONVERSION = NO;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.games";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = "";
 				INFOPLIST_KEY_UIRequiredDeviceCapabilities = metal;
 				INFOPLIST_KEY_UIRequiresFullScreen = YES;
 				INFOPLIST_KEY_UIStatusBarHidden = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)";
 				MARKETING_VERSION = 1.0;
-				OTHER_LDFLAGS = "-lc++";
 				PRODUCT_BUNDLE_IDENTIFIER = com.example.raylib;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				USER_HEADER_SEARCH_PATHS = ../../src;
+				USER_HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/../../src";
 			};
 			name = Release;
 		};
@@ -425,19 +403,17 @@
 		1B16D8F22BAEDBEA001FD5E0 /* Build configuration list for PBXProject "raylib" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				1B16D8FD2BAEDBEA001FD5E0 /* Debug */,
-				1B16D8FE2BAEDBEA001FD5E0 /* Release */,
+				1B16D8FD2BAEDBEA001FD5E0 /* Debug configuration for PBXProject "raylib" */,
+				1B16D8FE2BAEDBEA001FD5E0 /* Release configuration for PBXProject "raylib" */,
 			);
-			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 		1BF3FCDB2BAF1BCB00D3B043 /* Build configuration list for PBXNativeTarget "raylib" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				1BF3FCDC2BAF1BCB00D3B043 /* Debug */,
-				1BF3FCDD2BAF1BCB00D3B043 /* Release */,
+				1BF3FCDC2BAF1BCB00D3B043 /* Debug configuration for PBXNativeTarget "raylib" */,
+				1BF3FCDD2BAF1BCB00D3B043 /* Release configuration for PBXNativeTarget "raylib" */,
 			);
-			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
