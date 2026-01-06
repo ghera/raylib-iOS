@@ -658,9 +658,9 @@ void RecreatePlatformSurface(void *layer, int width, int height)
 - (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator
 {
     [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
-    [coordinator animateAlongsideTransition:nil completion:^(id<UIViewControllerTransitionCoordinatorContext> context) {
+    [coordinator animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext> context) {
         RecreatePlatformSurface((__bridge void *)self.view.layer, (int)size.width, (int)size.height);
-    }];
+    } completion:nil];
 }
 
 - (bool)prefersStatusBarHidden
