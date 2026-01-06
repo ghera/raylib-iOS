@@ -20,7 +20,7 @@ cmake_policy(SET CMP0063 NEW)
 
 # Directory for easier includes
 # Anywhere you see include(...) you can check <root>/cmake for that file
-set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 # RAYLIB_IS_MAIN determines whether the project is being used from root
 # or if it is added as a dependency (through add_subdirectory for example).
@@ -36,9 +36,6 @@ include(CompilerFlags)
 # Registers build options that are exposed to cmake
 include(CMakeOptions.txt)
 
-# Enforces a few environment and compiler configurations
-include(BuildOptions)
-
 if (UNIX AND NOT APPLE)
   if (NOT GLFW_BUILD_WAYLAND AND NOT GLFW_BUILD_X11)
     MESSAGE(FATAL_ERROR "Cannot disable both Wayland and X11")
@@ -51,7 +48,7 @@ add_subdirectory(src raylib)
 # Uninstall target
 if(NOT TARGET uninstall)
   configure_file(
-    "${CMAKE_MODULE_PATH}/Uninstall.cmake"
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Uninstall.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
     IMMEDIATE @ONLY)
 

@@ -55,15 +55,19 @@ extern void ios_destroy();
 
 #import <UIKit/UIKit.h>
 
-/* GameViewController */
+// MARK: - GameViewController interface
+
 @interface GameViewController : UIViewController
 - (void)update;
 @end
 
-/* AppDelegate */
+// MARK: - AppDelegate interface
+
 @interface AppDelegate : UIResponder <UIApplicationDelegate>
 @property (strong, nonatomic) UIWindow *window;
 @end
+
+// MARK: -
 
 //----------------------------------------------------------------------------------
 // Types and Structures Definition
@@ -398,7 +402,7 @@ int SetGamepadMappings(const char *mappings)
 }
 
 // Set gamepad vibration
-void SetGamepadVibration(int gamepad, float leftMotor, float rightMotor)
+void SetGamepadVibration(int gamepad, float leftMotor, float rightMotor, float duration)
 {
     TRACELOG(LOG_WARNING, "GamepadSetVibration() not implemented on target platform");
 }
@@ -747,12 +751,13 @@ static void SendGestureEvent(NSSet<UITouch *> * touches, int action)
 
 @end
 
+// MARK: - AppDelegate implementation
+
 @implementation AppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
     self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
-    self.window.backgroundColor = [UIColor redColor];
     self.window.rootViewController = [[GameViewController alloc] init];
     [self.window makeKeyAndVisible];
     ios_ready();
