@@ -5,7 +5,7 @@
 *
 *   LICENSE: zlib/libpng
 *
-*   Copyright (c) 2014-2024 Ramon Santamaria (@raysan5)
+*   Copyright (c) 2014-2026 Ramon Santamaria (@raysan5)
 *
 *   This software is provided "as-is", without any express or implied warranty. In no event
 *   will the authors be held liable for any damages arising from the use of this software.
@@ -34,15 +34,8 @@
 
 #if defined(SUPPORT_TRACELOG)
     #define TRACELOG(level, ...) TraceLog(level, __VA_ARGS__)
-
-    #if defined(SUPPORT_TRACELOG_DEBUG)
-        #define TRACELOGD(...) TraceLog(LOG_DEBUG, __VA_ARGS__)
-    #else
-        #define TRACELOGD(...) (void)0
-    #endif
 #else
     #define TRACELOG(level, ...) (void)0
-    #define TRACELOGD(...) (void)0
 #endif
 
 //----------------------------------------------------------------------------------

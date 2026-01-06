@@ -479,7 +479,6 @@ void SetupWindowSizes(int width, int height) {
 // Initialize platform: graphics, inputs and more
 int InitPlatform(void)
 {
-    CORE.Window.fullscreen = true;
     CORE.Window.flags |= FLAG_FULLSCREEN_MODE;
 
     EGLint samples = 0;
