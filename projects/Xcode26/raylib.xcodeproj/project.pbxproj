@@ -15,6 +15,7 @@
 		1BF3FCF62BAF1D3300D3B043 /* rtext.c in Sources */ = {isa = PBXBuildFile; fileRef = 1BF3FCEF2BAF1D3300D3B043 /* rtext.c */; };
 		1BF3FCF72BAF1D3300D3B043 /* rmodels.c in Sources */ = {isa = PBXBuildFile; fileRef = 1BF3FCF02BAF1D3300D3B043 /* rmodels.c */; };
 		1BF3FCFD2BAF2CFD00D3B043 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 1BF3FCFC2BAF2CFD00D3B043 /* main.c */; };
+		7E61F41E2F12829B007619C3 /* IOSBridge.mm in Sources */ = {isa = PBXBuildFile; fileRef = 7E61F41C2F12829B007619C3 /* IOSBridge.mm */; };
 		7EBA69492F0D324E00831340 /* libEGL.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7EBA69452F0D324100831340 /* libEGL.xcframework */; };
 		7EBA694A2F0D324E00831340 /* libEGL.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 7EBA69452F0D324100831340 /* libEGL.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		7EBA694B2F0D325000831340 /* libGLESv2.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7EBA69462F0D324100831340 /* libGLESv2.xcframework */; };
@@ -47,6 +48,8 @@
 		1BF3FCEF2BAF1D3300D3B043 /* rtext.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = rtext.c; path = ../../../src/rtext.c; sourceTree = "<group>"; };
 		1BF3FCF02BAF1D3300D3B043 /* rmodels.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = rmodels.c; path = ../../../src/rmodels.c; sourceTree = "<group>"; };
 		1BF3FCFC2BAF2CFD00D3B043 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
+		7E61F41B2F12829B007619C3 /* IOSBridge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IOSBridge.h; sourceTree = "<group>"; };
+		7E61F41C2F12829B007619C3 /* IOSBridge.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = IOSBridge.mm; sourceTree = "<group>"; };
 		7EBA69422F0D2F0000831340 /* rcore_ios.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = rcore_ios.c; path = "/Users/Shared/FeliXStudio/raylib-iOS/src/platforms/rcore_ios.c"; sourceTree = "<absolute>"; };
 		7EBA69452F0D324100831340 /* libEGL.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = libEGL.xcframework; sourceTree = "<group>"; };
 		7EBA69462F0D324100831340 /* libGLESv2.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = libGLESv2.xcframework; sourceTree = "<group>"; };
@@ -93,6 +96,7 @@
 				1BF3FCEF2BAF1D3300D3B043 /* rtext.c */,
 				1BF3FCED2BAF1D3300D3B043 /* rtextures.c */,
 				1BF3FCEB2BAF1D3300D3B043 /* utils.c */,
+				7E61F41D2F12829B007619C3 /* bridge */,
 			);
 			path = raylib;
 			sourceTree = "<group>";
@@ -105,6 +109,15 @@
 				1BF3FCE52BAF1C3000D3B043 /* AVFoundation.framework */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		7E61F41D2F12829B007619C3 /* bridge */ = {
+			isa = PBXGroup;
+			children = (
+				7E61F41B2F12829B007619C3 /* IOSBridge.h */,
+				7E61F41C2F12829B007619C3 /* IOSBridge.mm */,
+			);
+			path = bridge;
 			sourceTree = "<group>";
 		};
 		7EBA69392F0D2AA900831340 /* ANGLE */ = {
@@ -179,6 +192,7 @@
 		1BF3FCBF2BAF1BC900D3B043 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			files = (
+				7E61F41E2F12829B007619C3 /* IOSBridge.mm in Sources */,
 				1BF3FCF32BAF1D3300D3B043 /* rshapes.c in Sources */,
 				1BF3FCF12BAF1D3300D3B043 /* raudio.c in Sources */,
 				1BF3FCF42BAF1D3300D3B043 /* rtextures.c in Sources */,

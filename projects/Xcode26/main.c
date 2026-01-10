@@ -14,6 +14,10 @@
 
 #include "raylib.h"
 
+#if defined(PLATFORM_IOS)
+#include "IOSBridge.h"
+#endif
+
 int MAX_GESTURE_STRINGS = 20;
 int screenWidth = 0;
 int screenHeight = 0;
@@ -46,6 +50,11 @@ void ios_ready(){
     //SetGesturesEnabled(0b0000000000001001);   // Enable only some gestures to be detected
     SetTargetFPS(60);
     MAX_GESTURE_STRINGS = (screenHeight - 50) / 20;
+#if defined(PLATFORM_IOS)
+    SafeAreaInsets insets = GetIOSSafeAreaInsets();
+    add_log_text(TextFormat("SafeAreaInsets %.0f, %.0f, %.0f, %.0f",
+                            insets.top, insets.left, insets.bottom, insets.right));
+#endif
 }
 
 void ios_update(bool viewSizeChanged)
@@ -55,6 +64,11 @@ void ios_update(bool viewSizeChanged)
         screenHeight = GetScreenHeight();
         touchArea = (Rectangle){ 220, 10, screenWidth - 230.0f, screenHeight - 20.0f };
         add_log_text(TextFormat("ViewSizeChanged %d x %d", GetMonitorWidth(0), GetMonitorHeight(0)));
+#if defined(PLATFORM_IOS)
+        SafeAreaInsets insets = GetIOSSafeAreaInsets();
+        add_log_text(TextFormat("SafeAreaInsets %.0f, %.0f, %.0f, %.0f",
+                                insets.top, insets.left, insets.bottom, insets.right));
+#endif
     }
 
     lastGesture = currentGesture;
