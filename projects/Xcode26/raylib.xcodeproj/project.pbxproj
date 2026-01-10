@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		1BF3FCF12BAF1D3300D3B043 /* raudio.c in Sources */ = {isa = PBXBuildFile; fileRef = 1BF3FCEA2BAF1D3300D3B043 /* raudio.c */; };
-		1BF3FCF22BAF1D3300D3B043 /* utils.c in Sources */ = {isa = PBXBuildFile; fileRef = 1BF3FCEB2BAF1D3300D3B043 /* utils.c */; };
 		1BF3FCF32BAF1D3300D3B043 /* rshapes.c in Sources */ = {isa = PBXBuildFile; fileRef = 1BF3FCEC2BAF1D3300D3B043 /* rshapes.c */; };
 		1BF3FCF42BAF1D3300D3B043 /* rtextures.c in Sources */ = {isa = PBXBuildFile; fileRef = 1BF3FCED2BAF1D3300D3B043 /* rtextures.c */; };
 		1BF3FCF52BAF1D3300D3B043 /* rcore.c in Sources */ = {isa = PBXBuildFile; fileRef = 1BF3FCEE2BAF1D3300D3B043 /* rcore.c */; };
@@ -41,7 +40,6 @@
 		1BF3FCE52BAF1C3000D3B043 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		1BF3FCE82BAF1C3800D3B043 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		1BF3FCEA2BAF1D3300D3B043 /* raudio.c */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.objc; fileEncoding = 4; name = raudio.c; path = ../../../src/raudio.c; sourceTree = "<group>"; };
-		1BF3FCEB2BAF1D3300D3B043 /* utils.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = utils.c; path = ../../../src/utils.c; sourceTree = "<group>"; };
 		1BF3FCEC2BAF1D3300D3B043 /* rshapes.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = rshapes.c; path = ../../../src/rshapes.c; sourceTree = "<group>"; };
 		1BF3FCED2BAF1D3300D3B043 /* rtextures.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = rtextures.c; path = ../../../src/rtextures.c; sourceTree = "<group>"; };
 		1BF3FCEE2BAF1D3300D3B043 /* rcore.c */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.objc; fileEncoding = 4; name = rcore.c; path = ../../../src/rcore.c; sourceTree = "<group>"; };
@@ -95,7 +93,6 @@
 				1BF3FCEC2BAF1D3300D3B043 /* rshapes.c */,
 				1BF3FCEF2BAF1D3300D3B043 /* rtext.c */,
 				1BF3FCED2BAF1D3300D3B043 /* rtextures.c */,
-				1BF3FCEB2BAF1D3300D3B043 /* utils.c */,
 				7E61F41D2F12829B007619C3 /* bridge */,
 			);
 			path = raylib;
@@ -199,7 +196,6 @@
 				1BF3FCF62BAF1D3300D3B043 /* rtext.c in Sources */,
 				1BF3FCF52BAF1D3300D3B043 /* rcore.c in Sources */,
 				1BF3FCFD2BAF2CFD00D3B043 /* main.c in Sources */,
-				1BF3FCF22BAF1D3300D3B043 /* utils.c in Sources */,
 				1BF3FCF72BAF1D3300D3B043 /* rmodels.c in Sources */,
 			);
 		};

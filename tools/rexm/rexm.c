@@ -570,7 +570,7 @@ int main(int argc, char *argv[])
             // -----------------------------------------------------------------------------------------
 
             // Add example to the collection list, if not already there
-            // NOTE: Required format: shapes;shapes_basic_shapes;★☆☆☆;1.0;4.2;2014;2025;"Ray";@raysan5
+            // NOTE: Required format: shapes;shapes_basic_shapes;★☆☆☆;1.0;4.2;2014;2026;"Ray";@raysan5
             //------------------------------------------------------------------------------------------------
             char *exCollectionList = LoadFileText(exCollectionFilePath);
             if (TextFindIndex(exCollectionList, exName) == -1) // Example not found
@@ -2440,7 +2440,7 @@ static void UnloadExampleInfo(rlExampleInfo *exInfo)
 }
 
 // raylib example line info parser
-// Parses following line format: core;core_basic_window;★☆☆☆;1.0;1.0;2013;2025;"Ray";@raysan5
+// Parses following line format: core;core_basic_window;★☆☆☆;1.0;1.0;2013;2026;"Ray";@raysan5
 static int ParseExampleInfoLine(const char *line, rlExampleInfo *entry)
 {
     #define MAX_EXAMPLE_INFO_LINE_LEN   512
@@ -2452,7 +2452,10 @@ static int ParseExampleInfoLine(const char *line, rlExampleInfo *entry)
     int tokenCount = 0;
     char **tokens = TextSplit(line, ';', &tokenCount);
 
-    if (tokenCount != 9) LOG("REXM: WARNING: Example collection line contains invalid number of tokens: %i\n", tokenCount);
+    if (tokenCount != 9)
+    {
+        LOG("REXM: WARNING: Example collection line contains invalid number of tokens: %i\n", tokenCount);
+    }
 
     // Get category and name
     strcpy(entry->category, tokens[0]);
@@ -2894,8 +2897,8 @@ static void UpdateWebMetadata(const char *exHtmlPath, const char *exFilePath)
 
         // Get example name: replace underscore by spaces
         strncpy(exName, GetFileNameWithoutExt(exHtmlPathCopy), 64 - 1);
-        strncpy(exTitle, exName, 64 - 1);
-        for (int i = 0; (i < 256) && (exTitle[i] != '\0'); i++) { if (exTitle[i] == '_') exTitle[i] = ' '; }
+        strcpy(exTitle, exName);
+        for (int i = 0; (i < 64) && (exTitle[i] != '\0'); i++) { if (exTitle[i] == '_') exTitle[i] = ' '; }
 
         // Get example category from exName: copy until first underscore
         for (int i = 0; (exName[i] != '_'); i++) exCategory[i] = exName[i];
