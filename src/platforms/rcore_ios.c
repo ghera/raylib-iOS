@@ -50,7 +50,7 @@
 // iOS only supports callbacks
 // We are not able to give users full control of the game loop
 extern void ios_ready();
-extern void ios_update();
+extern void ios_update(bool);
 extern void ios_destroy();
 
 #import <UIKit/UIKit.h>
@@ -671,6 +671,8 @@ void RecreatePlatformSurface(void *layer, int width, int height)
 - (void)update
 {
     ios_update();
+    if (IsWindowFocused())
+        ios_update(false);
 }
 
 - (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer
