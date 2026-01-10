@@ -38,19 +38,22 @@ static void add_log_text(const char* title) {
     gesturesCount++;
 }
 
-void ready() {
-    InitWindow(0, 0, "raylib [core] example - input gestures");
-
+static void update_screen_layout() {
     screenWidth = GetScreenWidth();
     screenHeight = GetScreenHeight();
-
-    touchPosition = (Vector2){0, 0};
     touchArea = (Rectangle){220, 10, screenWidth - 230.0f, screenHeight - 20.0f};
+    MAX_GESTURE_STRINGS = (screenHeight - 50) / 20;
+}
+
+static void ready() {
+    InitWindow(0, 0, "raylib [core] example - input gestures");
 
     // SetGesturesEnabled(0b0000000000001001);   // Enable only some gestures to be detected
     SetTargetFPS(60);
-    MAX_GESTURE_STRINGS = (screenHeight - 50) / 20;
 
+    touchPosition = (Vector2){0, 0};
+    update_screen_layout();
+    
 #if defined(PLATFORM_IOS)
     SafeAreaInsets insets = GetIOSSafeAreaInsets();
     add_log_text(TextFormat("SafeAreaInsets %.0f, %.0f, %.0f, %.0f",
@@ -58,11 +61,9 @@ void ready() {
 #endif
 }
 
-void update(bool viewSizeChanged) {
+static void update(bool viewSizeChanged) {
     if (viewSizeChanged) {
-        screenWidth = GetScreenWidth();
-        screenHeight = GetScreenHeight();
-        touchArea = (Rectangle){220, 10, screenWidth - 230.0f, screenHeight - 20.0f};
+        update_screen_layout();
         add_log_text(TextFormat("ViewSizeChanged %d x %d", GetMonitorWidth(0), GetMonitorHeight(0)));
 
 #if defined(PLATFORM_IOS)
@@ -152,7 +153,7 @@ void update(bool viewSizeChanged) {
     EndDrawing();
 }
 
-void destroy() {
+static void destroy() {
     CloseWindow();
 }
 
