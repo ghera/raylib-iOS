@@ -1,3 +1,62 @@
+# raylib iOS fork (community / experimental)
+
+⚠️ This is an unofficial fork of [raylib](https://github.com/raysan5/raylib) with experimental iOS support based on community contributions.
+
+This fork is **not affiliated with the official raylib project**.
+
+## What is different from upstream
+
+- Includes an example in `projects/Xcode26` with the latest stable prebuilt ANGLE build (version 2.1.26423, git hash: 2dfb5b7603d0)
+- Maintains both the stable branch (`release/5.5`) and the master branch (updated weekly from upstream)
+
+## iOS caveats
+
+The app lifecycle is callback-driven and follows Apple's platform conventions.
+
+Trying to force a while-loop in main on iOS will inevitably lead to unnecessary complexity and maintenance issues.
+
+The only modification needed in main.c is this:
+
+```
+#if defined(PLATFORM_IOS)
+void ios_ready() {
+    ready();
+}
+
+void ios_update(bool viewSizeChanged) {
+    update(viewSizeChanged);
+}
+
+void ios_destroy() {
+    destroy();
+}
+#else
+int main() {
+    ready();
+
+    while (!WindowShouldClose()) {
+        update(false);
+    }
+
+    destroy();
+    return 0;
+}
+#endif
+```
+
+I tried many raylib original examples and they all work flawlessly with this simple modification.
+
+## Status
+
+This fork is intended for experimental and personal use.
+It is **not production-ready**.
+
+## Credits
+
+Based on work originally proposed in PR [#3880](https://github.com/raysan5/raylib/pull/3880) by [blueloveTH](https://github.com/blueloveTH).
+
+---
+
 <img align="left" style="width:260px" src="https://github.com/raysan5/raylib/blob/master/logo/raylib_logo_animation.gif" width="288px">
 
 **raylib is a simple and easy-to-use library to enjoy videogames programming.**
