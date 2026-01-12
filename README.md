@@ -43,6 +43,7 @@ int main() {
 }
 #endif
 ```
+where `ios_ready()`, `ios_update()` and `ios_destroy()` are lifecycle callbacks invoked from `rcore_ios.c`.
 
 I tried many raylib original examples and they all work flawlessly with this simple approach.
 
