@@ -15,7 +15,7 @@ The app lifecycle is callback-driven and follows Apple's platform conventions.
 
 Trying to force a while-loop in main on iOS will inevitably lead to unnecessary complexity and maintenance issues.
 
-The only modification needed in main.c is this:
+The only modification needed in main.c is something like this:
 
 ```
 #if defined(PLATFORM_IOS)
@@ -23,8 +23,8 @@ void ios_ready() {
     ready();
 }
 
-void ios_update(bool viewSizeChanged) {
-    update(viewSizeChanged);
+void ios_update() {
+    update();
 }
 
 void ios_destroy() {
@@ -35,7 +35,7 @@ int main() {
     ready();
 
     while (!WindowShouldClose()) {
-        update(false);
+        update();
     }
 
     destroy();
