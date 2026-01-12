@@ -7,7 +7,7 @@ This fork is **not affiliated with the official raylib project**.
 ## What is different from upstream
 
 - Includes an example in `projects/Xcode26` with an Apple Silicon ANGLE build (updated monthly from Chromium stable)
-- Maintains both the stable branch (`release/5.5`) and the master branch (updated weekly from upstream)
+- Maintains both the stable branch (`release/5.5`) and the master branch (updated monthly from upstream)
 
 ## iOS caveats
 
@@ -44,7 +44,7 @@ int main() {
 #endif
 ```
 
-I tried many raylib original examples and they all work flawlessly with this simple modification.
+I tried many raylib original examples and they all work flawlessly with this simple approach.
 
 ## Status
 
