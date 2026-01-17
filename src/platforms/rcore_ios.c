@@ -300,6 +300,33 @@ const char* GetClipboardText(void) {
     return clipboard.UTF8String;
 }
 
+// Get clipboard image
+Image GetClipboardImage(void) {
+    Image image = { 0 };
+
+    UIPasteboard* pasteboard = [UIPasteboard generalPasteboard];
+    UIImage* clipboardImage = pasteboard.image;
+
+    if (clipboardImage != nil) {
+        // Convert UIImage to PNG data
+        NSData* pngData = UIImagePNGRepresentation(clipboardImage);
+
+        if (pngData != nil) {
+            image = LoadImageFromMemory(".png", (const unsigned char*)[pngData bytes], (int)[pngData length]);
+
+            if (IsImageValid(image)) {
+                TRACELOG(LOG_INFO, "CLIPBOARD: Got image from clipboard successfully");
+            }
+        }
+    }
+
+    if (!IsImageValid(image)) {
+        TRACELOG(LOG_WARNING, "CLIPBOARD: No valid image data in clipboard");
+    }
+
+    return image;
+}
+
 // Show mouse cursor
 void ShowCursor(void) {
     CORE.Input.Mouse.cursorHidden = false;
