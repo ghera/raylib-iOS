@@ -604,7 +604,7 @@ void RecreatePlatformSurface(void* layer, int width, int height) {
     // self.modalPresentationCapturesStatusBarAppearance = true;
     platform.viewController = self;
     self.view.multipleTouchEnabled = true;
-    self.view.contentScaleFactor = [[UIScreen mainScreen] scale];
+    self.view.contentScaleFactor = [[UIScreen mainScreen] nativeScale];
 }
 
 - (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
