@@ -76,7 +76,7 @@ elseif (${PLATFORM} MATCHES "Web")
 
 elseif (${PLATFORM} MATCHES "Android")
     set(PLATFORM_CPP "PLATFORM_ANDROID")
-    set(GRAPHICS "GRAPHICS_API_OPENGL_ES2")
+    set(GRAPHICS "GRAPHICS_API_OPENGL_ES3")
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
     list(APPEND raylib_sources ${ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.c)
     include_directories(${ANDROID_NDK}/sources/android/native_app_glue)
@@ -91,7 +91,7 @@ elseif (${PLATFORM} MATCHES "Android")
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--exclude-libs,libatomic.a -Wl,--build-id -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now -Wl,--warn-shared-textrel -Wl,--fatal-warnings -u ANativeActivity_onCreate -Wl,-undefined,dynamic_lookup")
 
     find_library(OPENGL_LIBRARY OpenGL)
-    set(LIBS_PRIVATE log android EGL GLESv2 OpenSLES atomic c)
+    set(LIBS_PRIVATE log android EGL GLESv3 OpenSLES atomic c)
     set(LIBS_PUBLIC m)
 
 elseif ("${PLATFORM}" MATCHES "DRM")
