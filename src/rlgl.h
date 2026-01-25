@@ -1896,7 +1896,7 @@ void rlActiveDrawBuffers(int count)
         else
         {
             unsigned int buffers[8] = {
-#if defined(GRAPHICS_API_OPENGL_ES3)
+#if defined(GRAPHICS_API_OPENGL_ES2) && !defined(GRAPHICS_API_OPENGL_ES3)
                 GL_COLOR_ATTACHMENT0_EXT,
                 GL_COLOR_ATTACHMENT1_EXT,
                 GL_COLOR_ATTACHMENT2_EXT,
@@ -1917,7 +1917,7 @@ void rlActiveDrawBuffers(int count)
 #endif
             };
 
-#if defined(GRAPHICS_API_OPENGL_ES3)
+#if defined(GRAPHICS_API_OPENGL_ES2) && !defined(GRAPHICS_API_OPENGL_ES3)
             glDrawBuffersEXT(count, buffers);
 #else
             glDrawBuffers(count, buffers);
