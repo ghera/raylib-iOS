@@ -1940,7 +1940,7 @@ void TraceLog(int logType, const char *text, ...)
 
 // Set custom trace log
 void SetTraceLogCallback(TraceLogCallback callback)
-{ 
+{
     traceLog = callback;
 }
 
@@ -2775,7 +2775,7 @@ FilePathList LoadDirectoryFilesEx(const char *basePath, const char *filter, bool
     {
         // SCAN 1: Count files
         unsigned int fileCounter = GetDirectoryFileCountEx(basePath, filter, scanSubdirs);
-        
+
         // Memory allocation for dirFileCount
         files.paths = (char **)RL_CALLOC(fileCounter, sizeof(char *));
         for (unsigned int i = 0; i < fileCounter; i++) files.paths[i] = (char *)RL_CALLOC(MAX_FILEPATH_LENGTH, sizeof(char));
@@ -3674,13 +3674,13 @@ bool ExportAutomationEventList(AutomationEventList list, const char *fileName)
         int binarySize = 4 + sizeof(int) + sizeof(AutomationEvent)*list.count;
         unsigned char *binBuffer = (unsigned char *)RL_CALLOC(binarySize, 1);
         int offset = 0;
-        memcpy(binBuffer + offset, "rAE ", 4); 
+        memcpy(binBuffer + offset, "rAE ", 4);
         offset += 4;
-        memcpy(binBuffer + offset, &list.count, sizeof(int)); 
+        memcpy(binBuffer + offset, &list.count, sizeof(int));
         offset += sizeof(int);
         memcpy(binBuffer + offset, list.events, sizeof(AutomationEvent)*list.count);
         offset += sizeof(AutomationEvent)*list.count;
-        
+
         success = SaveFileData(TextFormat("%s.rae",fileName), binBuffer, binarySize);
         RL_FREE(binBuffer);
     }
@@ -3835,7 +3835,6 @@ void PlayAutomationEvent(AutomationEvent event)
 // Check if a key has been pressed once
 bool IsKeyPressed(int key)
 {
-
     bool pressed = false;
 
     if ((key > 0) && (key < MAX_KEYBOARD_KEYS))
@@ -3977,8 +3976,10 @@ bool IsGamepadButtonPressed(int gamepad, int button)
 {
     bool pressed = false;
 
-    if ((gamepad < MAX_GAMEPADS) && CORE.Input.Gamepad.ready[gamepad] && (button < MAX_GAMEPAD_BUTTONS) &&
-        (CORE.Input.Gamepad.previousButtonState[gamepad][button] == 0) && (CORE.Input.Gamepad.currentButtonState[gamepad][button] == 1)) pressed = true;
+    if ((gamepad < MAX_GAMEPADS) && CORE.Input.Gamepad.ready[gamepad] && (button < MAX_GAMEPAD_BUTTONS))
+    {
+        if ((CORE.Input.Gamepad.previousButtonState[gamepad][button] == 0) && (CORE.Input.Gamepad.currentButtonState[gamepad][button] == 1)) pressed = true;
+    }
 
     return pressed;
 }
@@ -3988,8 +3989,10 @@ bool IsGamepadButtonDown(int gamepad, int button)
 {
     bool down = false;
 
-    if ((gamepad < MAX_GAMEPADS) && CORE.Input.Gamepad.ready[gamepad] && (button < MAX_GAMEPAD_BUTTONS) &&
-        (CORE.Input.Gamepad.currentButtonState[gamepad][button] == 1)) down = true;
+    if ((gamepad < MAX_GAMEPADS) && CORE.Input.Gamepad.ready[gamepad] && (button < MAX_GAMEPAD_BUTTONS))
+    {
+        if (CORE.Input.Gamepad.currentButtonState[gamepad][button] == 1) down = true;
+    }
 
     return down;
 }
@@ -3999,8 +4002,10 @@ bool IsGamepadButtonReleased(int gamepad, int button)
 {
     bool released = false;
 
-    if ((gamepad < MAX_GAMEPADS) && CORE.Input.Gamepad.ready[gamepad] && (button < MAX_GAMEPAD_BUTTONS) &&
-        (CORE.Input.Gamepad.previousButtonState[gamepad][button] == 1) && (CORE.Input.Gamepad.currentButtonState[gamepad][button] == 0)) released = true;
+    if ((gamepad < MAX_GAMEPADS) && CORE.Input.Gamepad.ready[gamepad] && (button < MAX_GAMEPAD_BUTTONS))
+    {
+        if ((CORE.Input.Gamepad.previousButtonState[gamepad][button] == 1) && (CORE.Input.Gamepad.currentButtonState[gamepad][button] == 0)) released = true;
+    }
 
     return released;
 }
@@ -4010,8 +4015,10 @@ bool IsGamepadButtonUp(int gamepad, int button)
 {
     bool up = false;
 
-    if ((gamepad < MAX_GAMEPADS) && CORE.Input.Gamepad.ready[gamepad] && (button < MAX_GAMEPAD_BUTTONS) &&
-        (CORE.Input.Gamepad.currentButtonState[gamepad][button] == 0)) up = true;
+    if ((gamepad < MAX_GAMEPADS) && CORE.Input.Gamepad.ready[gamepad] && (button < MAX_GAMEPAD_BUTTONS))
+    {
+        if (CORE.Input.Gamepad.currentButtonState[gamepad][button] == 0) up = true;
+    }
 
     return up;
 }
@@ -4057,10 +4064,13 @@ bool IsMouseButtonPressed(int button)
 {
     bool pressed = false;
 
-    if ((CORE.Input.Mouse.currentButtonState[button] == 1) && (CORE.Input.Mouse.previousButtonState[button] == 0)) pressed = true;
+    if ((button >= 0) && (button <= MOUSE_BUTTON_BACK))
+    {
+        if ((CORE.Input.Mouse.currentButtonState[button] == 1) && (CORE.Input.Mouse.previousButtonState[button] == 0)) pressed = true;
 
-    // Map touches to mouse buttons checking
-    if ((CORE.Input.Touch.currentTouchState[button] == 1) && (CORE.Input.Touch.previousTouchState[button] == 0)) pressed = true;
+        // Map touches to mouse buttons checking
+        if ((CORE.Input.Touch.currentTouchState[button] == 1) && (CORE.Input.Touch.previousTouchState[button] == 0)) pressed = true;
+    }
 
     return pressed;
 }
@@ -4070,10 +4080,13 @@ bool IsMouseButtonDown(int button)
 {
     bool down = false;
 
-    if (CORE.Input.Mouse.currentButtonState[button] == 1) down = true;
+    if ((button >= 0) && (button <= MOUSE_BUTTON_BACK))
+    {
+        if (CORE.Input.Mouse.currentButtonState[button] == 1) down = true;
 
-    // NOTE: Touches are considered like mouse buttons
-    if (CORE.Input.Touch.currentTouchState[button] == 1) down = true;
+        // NOTE: Touches are considered like mouse buttons
+        if (CORE.Input.Touch.currentTouchState[button] == 1) down = true;
+    }
 
     return down;
 }
@@ -4083,10 +4096,13 @@ bool IsMouseButtonReleased(int button)
 {
     bool released = false;
 
-    if ((CORE.Input.Mouse.currentButtonState[button] == 0) && (CORE.Input.Mouse.previousButtonState[button] == 1)) released = true;
+    if ((button >= 0) && (button <= MOUSE_BUTTON_BACK))
+    {
+        if ((CORE.Input.Mouse.currentButtonState[button] == 0) && (CORE.Input.Mouse.previousButtonState[button] == 1)) released = true;
 
-    // Map touches to mouse buttons checking
-    if ((CORE.Input.Touch.currentTouchState[button] == 0) && (CORE.Input.Touch.previousTouchState[button] == 1)) released = true;
+        // Map touches to mouse buttons checking
+        if ((CORE.Input.Touch.currentTouchState[button] == 0) && (CORE.Input.Touch.previousTouchState[button] == 1)) released = true;
+    }
 
     return released;
 }
@@ -4096,10 +4112,13 @@ bool IsMouseButtonUp(int button)
 {
     bool up = false;
 
-    if (CORE.Input.Mouse.currentButtonState[button] == 0) up = true;
+    if ((button >= 0) && (button <= MOUSE_BUTTON_BACK))
+    {
+        if (CORE.Input.Mouse.currentButtonState[button] == 0) up = true;
 
-    // NOTE: Touches are considered like mouse buttons
-    if (CORE.Input.Touch.currentTouchState[button] == 0) up = true;
+        // NOTE: Touches are considered like mouse buttons
+        if (CORE.Input.Touch.currentTouchState[button] == 0) up = true;
+    }
 
     return up;
 }
@@ -4108,6 +4127,7 @@ bool IsMouseButtonUp(int button)
 int GetMouseX(void)
 {
     int mouseX = (int)((CORE.Input.Mouse.currentPosition.x + CORE.Input.Mouse.offset.x)*CORE.Input.Mouse.scale.x);
+
     return mouseX;
 }
 
@@ -4115,6 +4135,7 @@ int GetMouseX(void)
 int GetMouseY(void)
 {
     int mouseY = (int)((CORE.Input.Mouse.currentPosition.y + CORE.Input.Mouse.offset.y)*CORE.Input.Mouse.scale.y);
+
     return mouseY;
 }
 
@@ -4474,7 +4495,7 @@ static void RecordAutomationEvent(void)
 
         if (currentEventList->count == currentEventList->capacity) return;    // Security check
 
-        // Event type: INPUT_TOUCH_POSITION         
+        // Event type: INPUT_TOUCH_POSITION
         if (((int)CORE.Input.Touch.position[id].x != (int)CORE.Input.Touch.previousPosition[id].x) ||
             ((int)CORE.Input.Touch.position[id].y != (int)CORE.Input.Touch.previousPosition[id].y))
         {
@@ -4487,7 +4508,7 @@ static void RecordAutomationEvent(void)
             TRACELOG(LOG_INFO, "AUTOMATION: Frame: %i | Event type: INPUT_TOUCH_POSITION | Event parameters: %i, %i, %i", currentEventList->events[currentEventList->count].frame, currentEventList->events[currentEventList->count].params[0], currentEventList->events[currentEventList->count].params[1], currentEventList->events[currentEventList->count].params[2]);
             currentEventList->count++;
         }
-        
+
 
         if (currentEventList->count == currentEventList->capacity) return;    // Security check
     }
