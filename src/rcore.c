@@ -2666,7 +2666,7 @@ const char *GetApplicationDirectory(void)
 
     if (len > 0)
     {
-        for (int i = len; i >= 0; --i)
+        for (int i = len; i >= 0; i--)
         {
             if (appDir[i] == '\\')
             {
@@ -2688,7 +2688,7 @@ const char *GetApplicationDirectory(void)
 
     if (len > 0)
     {
-        for (int i = len; i >= 0; --i)
+        for (int i = len; i >= 0; i--)
         {
             if (appDir[i] == '/')
             {
@@ -2710,7 +2710,7 @@ const char *GetApplicationDirectory(void)
     if (_NSGetExecutablePath(appDir, &size) == 0)
     {
         int appDirLength = (int)strlen(appDir);
-        for (int i = appDirLength; i >= 0; --i)
+        for (int i = appDirLength; i >= 0; i--)
         {
             if (appDir[i] == '/')
             {
@@ -2733,7 +2733,7 @@ const char *GetApplicationDirectory(void)
     if (sysctl(mib, 4, appDir, &size, NULL, 0) == 0)
     {
         int appDirLength = (int)strlen(appDir);
-        for (int i = appDirLength; i >= 0; --i)
+        for (int i = appDirLength; i >= 0; i--)
         {
             if (appDir[i] == '/')
             {
@@ -2766,6 +2766,8 @@ FilePathList LoadDirectoryFiles(const char *dirPath)
 }
 
 // Load directory filepaths with extension filtering and recursive directory scan
+// Use 'DIR*' to include directories on directory scan
+// Use '*.*' to include all file types and directories on directory scan
 // WARNING: Directory is scanned twice, first time to get files count
 FilePathList LoadDirectoryFilesEx(const char *basePath, const char *filter, bool scanSubdirs)
 {
@@ -3006,6 +3008,7 @@ unsigned int GetDirectoryFileCountEx(const char *basePath, const char *filter, b
                 }
             }
         }
+        closedir(dir);
     }
     else TRACELOG(LOG_WARNING, "FILEIO: Directory cannot be opened (%s)", basePath);  // Maybe it's a file...
     return fileCounter;
