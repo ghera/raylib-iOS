@@ -123,7 +123,8 @@ static int MapPointId(UITouch* touch) {
     return 0;
 }
 
-int InitPlatform(void);  // Initialize platform (graphics, inputs and more)
+int InitPlatform(void);     // Initialize platform (graphics, inputs and more)
+void ClosePlatform(void);   // Close platform
 
 // Check if application should close
 bool WindowShouldClose(void) {
