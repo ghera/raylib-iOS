@@ -548,7 +548,7 @@ void DisableCursor(void)
 // Swap back buffer with front buffer (screen drawing)
 void SwapScreenBuffer(void)
 {
-    eglSwapBuffers(platform.device, platform.surface);
+    if (platform.surface != EGL_NO_SURFACE) eglSwapBuffers(platform.device, platform.surface);
 }
 
 //----------------------------------------------------------------------------------
