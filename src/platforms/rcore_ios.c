@@ -606,6 +606,7 @@ void RecreatePlatformSurface(void* layer, int width, int height) {
     platform.viewController = self;
     self.view.multipleTouchEnabled = true;
     self.view.contentScaleFactor = [[UIScreen mainScreen] nativeScale];
+    [self setNeedsUpdateOfScreenEdgesDeferringSystemGestures];
 }
 
 - (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
@@ -618,6 +619,11 @@ void RecreatePlatformSurface(void* layer, int width, int height) {
 
 - (bool)prefersStatusBarHidden {
     return true;
+}
+
+- (UIRectEdge)preferredScreenEdgesDeferringSystemGestures {
+    // Defer only side-edge system gestures so touches near left/right borders are prioritized.
+    return (UIRectEdgeLeft | UIRectEdgeRight);
 }
 
 - (void)update {
