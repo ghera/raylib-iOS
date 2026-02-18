@@ -682,7 +682,7 @@ GlyphInfo *LoadFontData(const unsigned char *fileData, int dataSize, int fontSiz
                 //  Render a unicode codepoint to a bitmap
                 //      stbtt_GetCodepointBitmap()           -- allocates and returns a bitmap
                 //      stbtt_GetCodepointBitmapBox()        -- how big the bitmap must be
-                //      stbtt_MakeCodepointBitmap()          -- renders into bitmap you provide
+                //      stbtt_MakeCodepointBitmap()          -- renders into a provided bitmap
 
                 // Check if a glyph is available in the font
                 // WARNING: if (index == 0), glyph not found, it could fallback to default .notdef glyph (if defined in font)
@@ -796,7 +796,7 @@ Image GenImageFontAtlas(const GlyphInfo *glyphs, Rectangle **glyphRecs, int glyp
 
     if (glyphs == NULL)
     {
-        TRACELOG(LOG_WARNING, "FONT: Provided chars info not valid, returning empty image atlas");
+        TRACELOG(LOG_WARNING, "FONT: Provided glyphs info not valid, returning empty image atlas");
         return atlas;
     }
 
@@ -881,16 +881,17 @@ Image GenImageFontAtlas(const GlyphInfo *glyphs, Rectangle **glyphRecs, int glyp
 
                 if (offsetY > (atlas.height - fontSize - padding))
                 {
-                    for (int j = i + 1; j < glyphCount; j++)
-                    {
-                        TRACELOG(LOG_WARNING, "FONT: Failed to package character (0x%02x)", glyphs[j].value);
-                        // Make sure remaining recs contain valid data
-                        recs[j].x = 0;
-                        recs[j].y = 0;
-                        recs[j].width = 0;
-                        recs[j].height = 0;
-                    }
-                    break; // Break for() loop, stop processing glyphs
+                    TRACELOG(LOG_WARNING, "FONT: Updating atlas size to fit all characters");
+                    
+                    // TODO: Increment atlas size (atlas.height*2) and continue adding glyphs
+                    int updatedAtlasHeight = atlas.height*2;
+                    int updatedAtlasDataSize = atlas.width*atlas.height;
+                    unsigned char *updatedAtlasData = (unsigned char *)RL_CALLOC(updatedAtlasDataSize, 1);
+                    
+                    memcpy(updatedAtlasData, atlas.data, atlasDataSize);
+                    RL_FREE(atlas.data);
+                    atlas.height = updatedAtlasHeight;
+                    atlasDataSize = updatedAtlasDataSize;
                 }
             }
 
@@ -967,7 +968,7 @@ Image GenImageFontAtlas(const GlyphInfo *glyphs, Rectangle **glyphRecs, int glyp
                     }
                 }
             }
-            else TRACELOG(LOG_WARNING, "FONT: Failed to package character (0x%02x)", glyphs[i].value);
+            else TRACELOG(LOG_WARNING, "FONT: Failed to package glyph (0x%02x)", glyphs[i].value);
         }
 
         RL_FREE(rects);
