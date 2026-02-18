@@ -123,7 +123,8 @@ static int MapPointId(UITouch* touch) {
     return 0;
 }
 
-int InitPlatform(void);  // Initialize platform (graphics, inputs and more)
+int InitPlatform(void);     // Initialize platform (graphics, inputs and more)
+void ClosePlatform(void);   // Close platform
 
 // Check if application should close
 bool WindowShouldClose(void) {
@@ -355,7 +356,7 @@ void DisableCursor(void) {
 
 // Swap back buffer with front buffer (screen drawing)
 void SwapScreenBuffer(void) {
-    eglSwapBuffers(platform.device, platform.surface);
+    if (platform.surface != EGL_NO_SURFACE) eglSwapBuffers(platform.device, platform.surface);
 }
 
 //----------------------------------------------------------------------------------
@@ -632,6 +633,7 @@ void RecreatePlatformSurface(void* layer, int width, int height) {
     platform.viewController = self;
     self.view.multipleTouchEnabled = true;
     self.view.contentScaleFactor = [[UIScreen mainScreen] nativeScale];
+    [self setNeedsUpdateOfScreenEdgesDeferringSystemGestures];
 }
 
 - (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
@@ -644,6 +646,11 @@ void RecreatePlatformSurface(void* layer, int width, int height) {
 
 - (bool)prefersStatusBarHidden {
     return true;
+}
+
+- (UIRectEdge)preferredScreenEdgesDeferringSystemGestures {
+    // Defer only side-edge system gestures so touches near left/right borders are prioritized.
+    return (UIRectEdgeLeft | UIRectEdgeRight);
 }
 
 - (void)update {

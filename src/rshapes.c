@@ -62,8 +62,11 @@
 #ifndef SMOOTH_CIRCLE_ERROR_RATE
     // Define error rate to calculate how many segments are needed to draw a smooth circle
     // REF: https://stackoverflow.com/a/2244088
-    #define SMOOTH_CIRCLE_ERROR_RATE    0.5f      // Circle error rate
+    // Maximum allowed sagitta error: the largest distance, in physical pixels,
+    // between an arc segment and its chord.
+    #define SMOOTH_CIRCLE_ERROR_RATE    0.25f
 #endif
+
 #ifndef SPLINE_SEGMENT_DIVISIONS
     #define SPLINE_SEGMENT_DIVISIONS      24      // Spline segment divisions
 #endif
@@ -344,8 +347,11 @@ void DrawCircleSector(Vector2 center, float radius, float startAngle, float endA
     if (segments < minSegments)
     {
         // Calculate the maximum angle between segments based on the error rate (usually 0.5f)
-        float th = acosf(2*powf(1 - SMOOTH_CIRCLE_ERROR_RATE/radius, 2) - 1);
-        segments = (int)((endAngle - startAngle)*ceilf(2*PI/th)/360);
+        float dpiScale = GetWindowScaleDPI().x;
+        // Use physical-pixel radius for consistent tessellation on HiDPI displays
+        float tessRadius = radius*dpiScale;
+        float th = acosf(2*powf(1 - SMOOTH_CIRCLE_ERROR_RATE/tessRadius, 2) - 1);
+        segments = (int)ceilf((endAngle - startAngle)*(2*PI/th)/360.0f);
 
         if (segments <= 0) segments = minSegments;
     }
@@ -436,8 +442,11 @@ void DrawCircleSectorLines(Vector2 center, float radius, float startAngle, float
     if (segments < minSegments)
     {
         // Calculate the maximum angle between segments based on the error rate (usually 0.5f)
-        float th = acosf(2*powf(1 - SMOOTH_CIRCLE_ERROR_RATE/radius, 2) - 1);
-        segments = (int)((endAngle - startAngle)*ceilf(2*PI/th)/360);
+        float dpiScale = GetWindowScaleDPI().x;
+        // Use physical-pixel radius for consistent tessellation on HiDPI displays
+        float tessRadius = radius*dpiScale;
+        float th = acosf(2*powf(1 - SMOOTH_CIRCLE_ERROR_RATE/tessRadius, 2) - 1);
+        segments = (int)ceilf((endAngle - startAngle)*(2*PI/th)/360.0f);
 
         if (segments <= 0) segments = minSegments;
     }
@@ -578,8 +587,11 @@ void DrawRing(Vector2 center, float innerRadius, float outerRadius, float startA
     if (segments < minSegments)
     {
         // Calculate the maximum angle between segments based on the error rate (usually 0.5f)
-        float th = acosf(2*powf(1 - SMOOTH_CIRCLE_ERROR_RATE/outerRadius, 2) - 1);
-        segments = (int)((endAngle - startAngle)*ceilf(2*PI/th)/360);
+        float dpiScale = GetWindowScaleDPI().x;
+        // Use physical-pixel radius for consistent tessellation on HiDPI displays
+        float tessOuterRadius = outerRadius*dpiScale;
+        float th = acosf(2*powf(1 - SMOOTH_CIRCLE_ERROR_RATE/tessOuterRadius, 2) - 1);
+        segments = (int)ceilf((endAngle - startAngle)*(2*PI/th)/360.0f);
 
         if (segments <= 0) segments = minSegments;
     }
@@ -669,8 +681,11 @@ void DrawRingLines(Vector2 center, float innerRadius, float outerRadius, float s
     if (segments < minSegments)
     {
         // Calculate the maximum angle between segments based on the error rate (usually 0.5f)
-        float th = acosf(2*powf(1 - SMOOTH_CIRCLE_ERROR_RATE/outerRadius, 2) - 1);
-        segments = (int)((endAngle - startAngle)*ceilf(2*PI/th)/360);
+        float dpiScale = GetWindowScaleDPI().x;
+        // Use physical-pixel radius for consistent tessellation on HiDPI displays
+        float tessOuterRadius = outerRadius*dpiScale;
+        float th = acosf(2*powf(1 - SMOOTH_CIRCLE_ERROR_RATE/tessOuterRadius, 2) - 1);
+        segments = (int)ceilf((endAngle - startAngle)*(2*PI/th)/360.0f);
 
         if (segments <= 0) segments = minSegments;
     }
@@ -959,8 +974,11 @@ void DrawRectangleRounded(Rectangle rec, float roundness, int segments, Color co
     if (segments < 4)
     {
         // Calculate the maximum angle between segments based on the error rate (usually 0.5f)
-        float th = acosf(2*powf(1 - SMOOTH_CIRCLE_ERROR_RATE/radius, 2) - 1);
-        segments = (int)(ceilf(2*PI/th)/4.0f);
+        float dpiScale = GetWindowScaleDPI().x;
+        // Use physical-pixel radius for consistent tessellation on HiDPI displays
+        float tessRadius = radius*dpiScale;
+        float th = acosf(2*powf(1 - SMOOTH_CIRCLE_ERROR_RATE/tessRadius, 2) - 1);
+        segments = (int)ceilf((2*PI/th)/4.0f);
         if (segments <= 0) segments = 4;
     }
 
@@ -1194,8 +1212,11 @@ void DrawRectangleRoundedLinesEx(Rectangle rec, float roundness, int segments, f
     if (segments < 4)
     {
         // Calculate the maximum angle between segments based on the error rate (usually 0.5f)
-        float th = acosf(2*powf(1 - SMOOTH_CIRCLE_ERROR_RATE/radius, 2) - 1);
-        segments = (int)(ceilf(2*PI/th)/2.0f);
+        float dpiScale = GetWindowScaleDPI().x;
+        // Use physical-pixel radius for consistent tessellation on HiDPI displays
+        float tessRadius = radius*dpiScale;
+        float th = acosf(2*powf(1 - SMOOTH_CIRCLE_ERROR_RATE/tessRadius, 2) - 1);
+        segments = (int)ceilf((2*PI/th)/4.0f);
         if (segments <= 0) segments = 4;
     }
 
