@@ -818,25 +818,11 @@ Image GenImageFontAtlas(const GlyphInfo *glyphs, Rectangle **glyphRecs, int glyp
         totalWidth += glyphs[i].image.width + 2*padding;
     }
 
-//#define SUPPORT_FONT_ATLAS_SIZE_CONSERVATIVE
-#if defined(SUPPORT_FONT_ATLAS_SIZE_CONSERVATIVE)
-    int rowCount = 0;
-    int imageSize = 64;  // Define minimum starting value to avoid unnecessary calculation steps for very small images
-
-    // NOTE: maxGlyphWidth is maximum possible space left at the end of row
-    while (totalWidth > (imageSize - maxGlyphWidth)*rowCount)
-    {
-        imageSize *= 2;                                 // Double the size of image (to keep POT)
-        rowCount = imageSize/(fontSize + 2*padding);    // Calculate new row count for the new image size
-    }
-
-    atlas.width = imageSize;   // Atlas bitmap width
-    atlas.height = imageSize;  // Atlas bitmap height
-#else
     int paddedFontSize = fontSize + 2*padding;
 
-    // No need for a so-conservative atlas generation
-    // NOTE: Multiplying total expected are by 1.2f scale factor
+    // Estimate image atlas size from available data
+    // NOTE: Multiplying total expected area by 1.2f scale factor but in case
+    // some glyphs do not fit, the atlas height is scaled x2 to fit them
     float totalArea = totalWidth*paddedFontSize*1.2f;
     float imageMinSize = sqrtf(totalArea);
     int imageSize = (int)powf(2, ceilf(logf(imageMinSize)/logf(2)));
@@ -851,7 +837,6 @@ Image GenImageFontAtlas(const GlyphInfo *glyphs, Rectangle **glyphRecs, int glyp
         atlas.width = imageSize;   // Atlas bitmap width
         atlas.height = imageSize;  // Atlas bitmap height
     }
-#endif
 
     int atlasDataSize = atlas.width*atlas.height; // Save total size for bounds checking
     atlas.data = (unsigned char *)RL_CALLOC(atlasDataSize, 1); // Create a bitmap to store characters (8 bpp)
@@ -1512,15 +1497,14 @@ void UnloadTextLines(char **lines, int lineCount)
 }
 
 // Get text length in bytes, check for \0 character
+// NOTE: Alternative: use strlen(text)
 unsigned int TextLength(const char *text)
 {
     unsigned int length = 0;
 
     if (text != NULL)
-    {
-        // NOTE: Alternative: use strlen(text)
-
-        while (*text++) length++;
+    {        
+        while (text[length] != '\0') length++;
     }
 
     return length;
@@ -1733,7 +1717,7 @@ char *TextReplace(const char *text, const char *search, const char *replacement)
 {
     char *result = NULL;
 
-    if ((text != NULL) && (search != NULL))
+    if ((text != NULL) && (search != NULL) && (search[0] != '\0'))
     {   
         if (replacement == NULL) replacement = "";
 
@@ -1747,8 +1731,6 @@ char *TextReplace(const char *text, const char *search, const char *replacement)
 
         textLen = TextLength(text);
         searchLen = TextLength(search);
-        if (searchLen == 0) return NULL;  // Empty search causes infinite loop during count
-
         replaceLen = TextLength(replacement);
 
         // Count the number of replacements needed
@@ -1757,34 +1739,37 @@ char *TextReplace(const char *text, const char *search, const char *replacement)
 
         // Allocate returning string and point temp to it
         int tempLen = textLen + (replaceLen - searchLen)*count + 1;
-        temp = result = (char *)RL_MALLOC(tempLen);
+        temp = result = (char *)RL_CALLOC(tempLen, sizeof(char));
 
-        if (!result) return NULL;   // Memory could not be allocated
-
-        // First time through the loop, all the variable are set correctly from here on,
-        //  - 'temp' points to the end of the result string
-        //  - 'insertPoint' points to the next occurrence of replace in text
-        //  - 'text' points to the remainder of text after "end of replace"
-        while (count--)
+        if (result != NULL)   // Memory was allocated
         {
-            insertPoint = (char *)strstr(text, search);
-            lastReplacePos = (int)(insertPoint - text);
-            
-            memcpy(temp, text, lastReplacePos);
-            temp += lastReplacePos;
-            
-            if (replaceLen > 0)
+            // First time through the loop, all the variable are set correctly from here on,
+            //  - 'temp' points to the end of the result string
+            //  - 'insertPoint' points to the next occurrence of replace in text
+            //  - 'text' points to the remainder of text after "end of replace"
+            while (count > 0)
             {
-                memcpy(temp, replacement, replaceLen);
-                temp += replaceLen; 
+                insertPoint = (char *)strstr(text, search);
+                lastReplacePos = (int)(insertPoint - text);
+                
+                memcpy(temp, text, lastReplacePos);
+                temp += lastReplacePos;
+                
+                if (replaceLen > 0)
+                {
+                    memcpy(temp, replacement, replaceLen);
+                    temp += replaceLen; 
+                }
+
+                text += (lastReplacePos + searchLen); // Move to next "end of replace"
+                
+                count--;
             }
 
-            text += lastReplacePos + searchLen; // Move to next "end of replace"
+            // Copy remaind text part after replacement to result (pointed by moving temp)
+            // NOTE: Text pointer internal copy has been updated along the process
+            strncpy(temp, text, TextLength(text));
         }
-
-        // Copy remaind text part after replacement to result (pointed by moving temp)
-        strcpy(temp, text); // OK
-        //strncpy(temp, text, tempLen - 1); // WRONG
     }
 
     return result;
