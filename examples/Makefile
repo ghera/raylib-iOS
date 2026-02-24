@@ -90,6 +90,11 @@ BUILD_MODE            ?= RELEASE
 # Use external GLFW library instead of rglfw module
 USE_EXTERNAL_GLFW     ?= FALSE
 
+# Enable support for X11 by default on Linux when using GLFW
+# NOTE: Wayland is disabled by default, only enable if you are sure
+GLFW_LINUX_ENABLE_WAYLAND  ?= FALSE
+GLFW_LINUX_ENABLE_X11      ?= TRUE
+
 # PLATFORM_DESKTOP_SDL: It requires SDL library to be provided externally
 # WARNING: Library is not included in raylib, it MUST be configured by users
 SDL_INCLUDE_PATH      ?= $(RAYLIB_SRC_PATH)/external/SDL2/include
@@ -394,9 +399,11 @@ ifeq ($(TARGET_PLATFORM),PLATFORM_DESKTOP_GLFW)
         LDLIBS = -lraylib -lGL -lm -lpthread -ldl -lrt
 
         # On Wayland, additional libraries requires
-        ifeq ($(USE_WAYLAND_DISPLAY),TRUE)
+        ifeq ($(GLFW_LINUX_ENABLE_WAYLAND),TRUE)
             LDLIBS += -lwayland-client -lwayland-cursor -lwayland-egl -lxkbcommon
-        else
+        endif
+
+        ifeq ($(GLFW_LINUX_ENABLE_X11),TRUE)
             # On X11, additional libraries required
             LDLIBS += -lX11
             # NOTE: It seems additional libraries are not required any more, latest GLFW just dlopen them
@@ -657,10 +664,10 @@ TEXT = \
     text/text_writing_anim
 
 MODELS = \
+    models/models_animation_blend_custom \
     models/models_animation_blending \
-    models/models_animation_bone_blending \
     models/models_animation_gpu_skinning \
-    models/models_animation_playing \
+    models/models_animation_timing \
     models/models_basic_voxel \
     models/models_billboard_rendering \
     models/models_bone_socket \
@@ -673,6 +680,7 @@ MODELS = \
     models/models_heightmap_rendering \
     models/models_loading \
     models/models_loading_gltf \
+    models/models_loading_iqm \
     models/models_loading_m3d \
     models/models_loading_vox \
     models/models_mesh_generation \
