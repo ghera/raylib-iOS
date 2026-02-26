@@ -35,10 +35,6 @@
 *           - Memory framebuffer output, using software renderer, no OS required
 *
 *   CONFIGURATION:
-*       #define SUPPORT_DEFAULT_FONT (default)
-*           Default font is loaded on window initialization to be available for the user to render simple text
-*           NOTE: If enabled, uses external module functions to load default raylib font (module: text)
-*
 *       #define SUPPORT_CAMERA_SYSTEM
 *           Camera module is included (rcamera.h) and multiple predefined cameras are available:
 *               free, 1st/3rd person, orbital, custom
@@ -126,17 +122,17 @@
 #define RAYMATH_IMPLEMENTATION
 #include "raymath.h"                // Vector2, Vector3, Quaternion and Matrix functionality
 
-#if defined(SUPPORT_GESTURES_SYSTEM)
+#if SUPPORT_GESTURES_SYSTEM
     #define RGESTURES_IMPLEMENTATION
     #include "rgestures.h"          // Gestures detection functionality
 #endif
 
-#if defined(SUPPORT_CAMERA_SYSTEM)
+#if SUPPORT_CAMERA_SYSTEM
     #define RCAMERA_IMPLEMENTATION
     #include "rcamera.h"            // Camera system functionality
 #endif
 
-#if defined(SUPPORT_COMPRESSION_API)
+#if SUPPORT_COMPRESSION_API
     #define SINFL_IMPLEMENTATION
     #define SINFL_NO_SIMD
     #include "external/sinfl.h"     // Deflate (RFC 1951) decompressor
@@ -145,7 +141,7 @@
     #include "external/sdefl.h"     // Deflate (RFC 1951) compressor
 #endif
 
-#if defined(SUPPORT_RPRAND_GENERATOR)
+#if SUPPORT_RPRAND_GENERATOR
     #define RPRAND_IMPLEMENTATION
     #include "external/rprand.h"
 #endif
@@ -181,7 +177,7 @@
 #elif defined(__APPLE__)
     #include <sys/syslimits.h>
     #include <mach-o/dyld.h>
-#endif // OSs
+#endif
 
 #define _CRT_INTERNAL_NONSTDC_NAMES  1
 #include <sys/stat.h>               // Required for: stat(), S_ISREG [Used in GetFileModTime(), IsFilePath()]
@@ -407,11 +403,11 @@ static SaveFileDataCallback saveFileData = NULL;    // SaveFileText callback fun
 static LoadFileTextCallback loadFileText = NULL;    // LoadFileText callback function pointer
 static SaveFileTextCallback saveFileText = NULL;    // SaveFileText callback function pointer
 
-#if defined(SUPPORT_SCREEN_CAPTURE)
+#if SUPPORT_SCREEN_CAPTURE
 static int screenshotCounter = 0;                   // Screenshots counter
 #endif
 
-#if defined(SUPPORT_AUTOMATION_EVENTS)
+#if SUPPORT_AUTOMATION_EVENTS
 // Automation events type
 typedef enum AutomationEventType {
     EVENT_NONE = 0,
@@ -503,8 +499,7 @@ static bool automationEventRecording = false;               // Recording automat
 // Module Functions Declaration
 // NOTE: Those functions are common for all platforms!
 //----------------------------------------------------------------------------------
-
-#if defined(SUPPORT_MODULE_RTEXT) && defined(SUPPORT_DEFAULT_FONT)
+#if SUPPORT_MODULE_RTEXT
 extern void LoadFontDefault(void);      // [Module: text] Loads default font on InitWindow()
 extern void UnloadFontDefault(void);    // [Module: text] Unloads default font from GPU memory
 #endif
@@ -517,7 +512,7 @@ static void SetupViewport(int width, int height);           // Set viewport for 
 
 static void ScanDirectoryFiles(const char *basePath, FilePathList *list, const char *filter, unsigned int expectedFileCount, bool scanSubdirs); // Scan all files and directories in a base path
 
-#if defined(SUPPORT_AUTOMATION_EVENTS)
+#if SUPPORT_AUTOMATION_EVENTS
 static void RecordAutomationEvent(void); // Record frame events (to internal events array)
 #endif
 
@@ -526,30 +521,30 @@ static void RecordAutomationEvent(void); // Record frame events (to internal eve
 __declspec(dllimport) void __stdcall Sleep(unsigned long msTimeout); // Required for: WaitTime()
 #endif
 
-#if !defined(SUPPORT_MODULE_RTEXT)
+#if !SUPPORT_MODULE_RTEXT
 const char *TextFormat(const char *text, ...); // Formatting of text with variables to 'embed'
-#endif // !SUPPORT_MODULE_RTEXT
+#endif
 
 #if defined(PLATFORM_DESKTOP)
     #define PLATFORM_DESKTOP_GLFW
 #endif
 
 // Using '#pragma message' because '#warning' is not adopted by MSVC
-#if defined(SUPPORT_CLIPBOARD_IMAGE)
-    #if !defined(SUPPORT_MODULE_RTEXTURES)
+#if SUPPORT_CLIPBOARD_IMAGE
+    #if !SUPPORT_MODULE_RTEXTURES
         #pragma message ("WARNING: Enabling SUPPORT_CLIPBOARD_IMAGE requires SUPPORT_MODULE_RTEXTURES to work properly")
     #endif
 
     // It's nice to have support Bitmap on Linux as well, but not as necessary as Windows
-    #if !defined(SUPPORT_FILEFORMAT_BMP) && defined(_WIN32)
+    #if !SUPPORT_FILEFORMAT_BMP && defined(_WIN32)
         #pragma message ("WARNING: Enabling SUPPORT_CLIPBOARD_IMAGE requires SUPPORT_FILEFORMAT_BMP, specially on Windows")
     #endif
 
     // From what I've tested applications on Wayland saves images on clipboard as PNG
-    #if (!defined(SUPPORT_FILEFORMAT_PNG) || !defined(SUPPORT_FILEFORMAT_JPG)) && !defined(_WIN32)
+    #if (!SUPPORT_FILEFORMAT_PNG || !SUPPORT_FILEFORMAT_JPG) && !defined(_WIN32)
         #pragma message ("WARNING: Getting image from the clipboard might not work without SUPPORT_FILEFORMAT_PNG or SUPPORT_FILEFORMAT_JPG")
     #endif
-#endif // SUPPORT_CLIPBOARD_IMAGE
+#endif
 
 // Include platform-specific submodules
 #if defined(PLATFORM_DESKTOP_GLFW)
@@ -657,27 +652,27 @@ void InitWindow(int width, int height, const char *title)
     TRACELOG(LOG_INFO, "Supported raylib modules:");
     TRACELOG(LOG_INFO, "    > rcore:..... loaded (mandatory)");
     TRACELOG(LOG_INFO, "    > rlgl:...... loaded (mandatory)");
-#if defined(SUPPORT_MODULE_RSHAPES)
+#if SUPPORT_MODULE_RSHAPES
     TRACELOG(LOG_INFO, "    > rshapes:... loaded (optional)");
 #else
     TRACELOG(LOG_INFO, "    > rshapes:... not loaded (optional)");
 #endif
-#if defined(SUPPORT_MODULE_RTEXTURES)
+#if SUPPORT_MODULE_RTEXTURES
     TRACELOG(LOG_INFO, "    > rtextures:. loaded (optional)");
 #else
     TRACELOG(LOG_INFO, "    > rtextures:. not loaded (optional)");
 #endif
-#if defined(SUPPORT_MODULE_RTEXT)
+#if SUPPORT_MODULE_RTEXT
     TRACELOG(LOG_INFO, "    > rtext:..... loaded (optional)");
 #else
     TRACELOG(LOG_INFO, "    > rtext:..... not loaded (optional)");
 #endif
-#if defined(SUPPORT_MODULE_RMODELS)
+#if SUPPORT_MODULE_RMODELS
     TRACELOG(LOG_INFO, "    > rmodels:... loaded (optional)");
 #else
     TRACELOG(LOG_INFO, "    > rmodels:... not loaded (optional)");
 #endif
-#if defined(SUPPORT_MODULE_RAUDIO)
+#if SUPPORT_MODULE_RAUDIO
     TRACELOG(LOG_INFO, "    > raudio:.... loaded (optional)");
 #else
     TRACELOG(LOG_INFO, "    > raudio:.... not loaded (optional)");
@@ -716,29 +711,27 @@ void InitWindow(int width, int height, const char *title)
     // Setup default viewport
     SetupViewport(CORE.Window.render.width, CORE.Window.render.height);
 
-#if defined(SUPPORT_MODULE_RTEXT)
-    #if defined(SUPPORT_DEFAULT_FONT)
-        // Load default font
-        // WARNING: External function: Module required: rtext
-        LoadFontDefault();
-        #if defined(SUPPORT_MODULE_RSHAPES)
-        // Set font white rectangle for shapes drawing, so shapes and text can be batched together
-        // WARNING: rshapes module is required, if not available, default internal white rectangle is used
-        Rectangle rec = GetFontDefault().recs[95];
-        if (FLAG_IS_SET(CORE.Window.flags, FLAG_MSAA_4X_HINT))
-        {
-            // NOTE: We try to maxime rec padding to avoid pixel bleeding on MSAA filtering
-            SetShapesTexture(GetFontDefault().texture, (Rectangle){ rec.x + 2, rec.y + 2, 1, 1 });
-        }
-        else
-        {
-            // NOTE: We set up a 1px padding on char rectangle to avoid pixel bleeding
-            SetShapesTexture(GetFontDefault().texture, (Rectangle){ rec.x + 1, rec.y + 1, rec.width - 2, rec.height - 2 });
-        }
-        #endif
+#if SUPPORT_MODULE_RTEXT
+    // Load default font
+    // WARNING: External function: Module required: rtext
+    LoadFontDefault();
+    #if SUPPORT_MODULE_RSHAPES
+    // Set font white rectangle for shapes drawing, so shapes and text can be batched together
+    // WARNING: rshapes module is required, if not available, default internal white rectangle is used
+    Rectangle rec = GetFontDefault().recs[95];
+    if (FLAG_IS_SET(CORE.Window.flags, FLAG_MSAA_4X_HINT))
+    {
+        // NOTE: We try to maxime rec padding to avoid pixel bleeding on MSAA filtering
+        SetShapesTexture(GetFontDefault().texture, (Rectangle){ rec.x + 2, rec.y + 2, 1, 1 });
+    }
+    else
+    {
+        // NOTE: We set up a 1px padding on char rectangle to avoid pixel bleeding
+        SetShapesTexture(GetFontDefault().texture, (Rectangle){ rec.x + 1, rec.y + 1, rec.width - 2, rec.height - 2 });
+    }
     #endif
 #else
-    #if defined(SUPPORT_MODULE_RSHAPES)
+    #if SUPPORT_MODULE_RSHAPES
     // Set default texture and rectangle to be used for shapes drawing
     // NOTE: rlgl default texture is a 1x1 pixel UNCOMPRESSED_R8G8B8A8
     Texture2D texture = { rlGetTextureIdDefault(), 1, 1, 1, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8 };
@@ -758,7 +751,7 @@ void InitWindow(int width, int height, const char *title)
 // Close window and unload OpenGL context
 void CloseWindow(void)
 {
-#if defined(SUPPORT_MODULE_RTEXT) && defined(SUPPORT_DEFAULT_FONT)
+#if SUPPORT_MODULE_RTEXT
     UnloadFontDefault();        // WARNING: Module required: rtext
 #endif
 
@@ -912,11 +905,11 @@ void EndDrawing(void)
 {
     rlDrawRenderBatchActive();      // Update and draw internal render batch
 
-#if defined(SUPPORT_AUTOMATION_EVENTS)
+#if SUPPORT_AUTOMATION_EVENTS
     if (automationEventRecording) RecordAutomationEvent();    // Event recording
 #endif
 
-#if !defined(SUPPORT_CUSTOM_FRAME_CONTROL)
+#if !SUPPORT_CUSTOM_FRAME_CONTROL
     SwapScreenBuffer();                  // Copy back buffer to front buffer (screen)
 
     // Frame time control system
@@ -941,13 +934,13 @@ void EndDrawing(void)
     PollInputEvents();      // Poll user events (before next frame update)
 #endif
 
-#if defined(SUPPORT_SCREEN_CAPTURE)
+#if SUPPORT_SCREEN_CAPTURE
     if (IsKeyPressed(KEY_F12))
     {
         TakeScreenshot(TextFormat("screenshot%03i.png", screenshotCounter));
         screenshotCounter++;
     }
-#endif  // SUPPORT_SCREEN_CAPTURE
+#endif
 
     CORE.Time.frameCounter++;
 }
@@ -1309,7 +1302,7 @@ Shader LoadShaderFromMemory(const char *vsCode, const char *fsCode)
         shader.locs[SHADER_LOC_VERTEX_COLOR] = rlGetLocationAttrib(shader.id, RL_DEFAULT_SHADER_ATTRIB_NAME_COLOR);
         shader.locs[SHADER_LOC_VERTEX_BONEIDS] = rlGetLocationAttrib(shader.id, RL_DEFAULT_SHADER_ATTRIB_NAME_BONEINDICES);
         shader.locs[SHADER_LOC_VERTEX_BONEWEIGHTS] = rlGetLocationAttrib(shader.id, RL_DEFAULT_SHADER_ATTRIB_NAME_BONEWEIGHTS);
-        shader.locs[SHADER_LOC_VERTEX_INSTANCETRANSFORMS] = rlGetLocationAttrib(shader.id, RL_DEFAULT_SHADER_ATTRIB_NAME_INSTANCETRANSFORMS);
+        shader.locs[SHADER_LOC_VERTEX_INSTANCETRANSFORM] = rlGetLocationAttrib(shader.id, RL_DEFAULT_SHADER_ATTRIB_NAME_INSTANCETRANSFORM);
 
         // Get handles to GLSL uniform locations (vertex shader)
         shader.locs[SHADER_LOC_MATRIX_MVP] = rlGetLocationUniform(shader.id, RL_DEFAULT_SHADER_UNIFORM_NAME_MVP);
@@ -1678,14 +1671,14 @@ void WaitTime(double seconds)
 {
     if (seconds < 0) return;    // Security check
 
-#if defined(SUPPORT_BUSY_WAIT_LOOP) || defined(SUPPORT_PARTIALBUSY_WAIT_LOOP)
+#if SUPPORT_BUSY_WAIT_LOOP || SUPPORT_PARTIALBUSY_WAIT_LOOP
     double destinationTime = GetTime() + seconds;
 #endif
 
-#if defined(SUPPORT_BUSY_WAIT_LOOP)
+#if SUPPORT_BUSY_WAIT_LOOP
     while (GetTime() < destinationTime) { }
 #else
-    #if defined(SUPPORT_PARTIALBUSY_WAIT_LOOP)
+    #if SUPPORT_PARTIALBUSY_WAIT_LOOP
         double sleepSeconds = seconds - seconds*0.05;  // NOTE: We reserve a percentage of the time for busy waiting
     #else
         double sleepSeconds = seconds;
@@ -1709,7 +1702,7 @@ void WaitTime(double seconds)
         usleep(sleepSeconds*1000000.0);
     #endif
 
-    #if defined(SUPPORT_PARTIALBUSY_WAIT_LOOP)
+    #if SUPPORT_PARTIALBUSY_WAIT_LOOP
         while (GetTime() < destinationTime) { }
     #endif
 #endif
@@ -1725,7 +1718,7 @@ void WaitTime(double seconds)
 // Set the seed for the random number generator
 void SetRandomSeed(unsigned int seed)
 {
-#if defined(SUPPORT_RPRAND_GENERATOR)
+#if SUPPORT_RPRAND_GENERATOR
     rprand_set_seed(seed);
 #else
     srand(seed);
@@ -1744,7 +1737,7 @@ int GetRandomValue(int min, int max)
         min = tmp;
     }
 
-#if defined(SUPPORT_RPRAND_GENERATOR)
+#if SUPPORT_RPRAND_GENERATOR
     value = rprand_get_value(min, max);
 #else
     // WARNING: Ranges higher than RAND_MAX will return invalid results
@@ -1783,6 +1776,7 @@ int GetRandomValue(int min, int max)
         value = min + (int)(r%m);
     }
 #endif
+
     return value;
 }
 
@@ -1791,7 +1785,7 @@ int *LoadRandomSequence(unsigned int count, int min, int max)
 {
     int *values = NULL;
 
-#if defined(SUPPORT_RPRAND_GENERATOR)
+#if SUPPORT_RPRAND_GENERATOR
     values = rprand_load_sequence(count, min, max);
 #else
     if (count > ((unsigned int)abs(max - min) + 1)) return values;  // Security check
@@ -1822,13 +1816,14 @@ int *LoadRandomSequence(unsigned int count, int min, int max)
         }
     }
 #endif
+
     return values;
 }
 
 // Unload random values sequence
 void UnloadRandomSequence(int *sequence)
 {
-#if defined(SUPPORT_RPRAND_GENERATOR)
+#if SUPPORT_RPRAND_GENERATOR
     rprand_unload_sequence(sequence);
 #else
     RL_FREE(sequence);
@@ -1839,7 +1834,7 @@ void UnloadRandomSequence(int *sequence)
 // NOTE: Provided fileName should not contain paths, saving to working directory
 void TakeScreenshot(const char *fileName)
 {
-#if defined(SUPPORT_MODULE_RTEXTURES)
+#if SUPPORT_MODULE_RTEXTURES
     // Security check to (partially) avoid malicious code
     if (strchr(fileName, '\'') != NULL) { TRACELOG(LOG_WARNING, "SYSTEM: Provided fileName could be potentially malicious, avoid [\'] character"); return; }
 
@@ -1887,7 +1882,7 @@ void SetTraceLogLevel(int logType) { logTypeLevel = logType; }
 // Show trace log messages (LOG_INFO, LOG_WARNING, LOG_ERROR, LOG_DEBUG)
 void TraceLog(int logType, const char *text, ...)
 {
-#if defined(SUPPORT_TRACELOG)
+#if SUPPORT_TRACELOG
     // Message has level below current threshold, don't emit
     if ((logType < logTypeLevel) || (text == NULL)) return;
 
@@ -1936,8 +1931,7 @@ void TraceLog(int logType, const char *text, ...)
     va_end(args);
 
     if (logType == LOG_FATAL) exit(EXIT_FAILURE);  // If fatal logging, exit program
-
-#endif  // SUPPORT_TRACELOG
+#endif
 }
 
 // Set custom trace log
@@ -1981,12 +1975,8 @@ unsigned char *LoadFileData(const char *fileName, int *dataSize)
 
     if (fileName != NULL)
     {
-        if (loadFileData)
-        {
-            data = loadFileData(fileName, dataSize);
-            return data;
-        }
-#if defined(SUPPORT_STANDARD_FILEIO)
+        if (loadFileData) return loadFileData(fileName, dataSize);
+
         FILE *file = fopen(fileName, "rb");
 
         if (file != NULL)
@@ -2030,9 +2020,6 @@ unsigned char *LoadFileData(const char *fileName, int *dataSize)
             fclose(file);
         }
         else TRACELOG(LOG_WARNING, "FILEIO: [%s] Failed to open file", fileName);
-#else
-    TRACELOG(LOG_WARNING, "FILEIO: Standard file io not supported, use custom file callback");
-#endif
     }
     else TRACELOG(LOG_WARNING, "FILEIO: File name provided is not valid");
 
@@ -2052,11 +2039,8 @@ bool SaveFileData(const char *fileName, void *data, int dataSize)
 
     if (fileName != NULL)
     {
-        if (saveFileData)
-        {
-            return saveFileData(fileName, data, dataSize);
-        }
-#if defined(SUPPORT_STANDARD_FILEIO)
+        if (saveFileData) return saveFileData(fileName, data, dataSize);
+
         FILE *file = fopen(fileName, "wb");
 
         if (file != NULL)
@@ -2073,9 +2057,6 @@ bool SaveFileData(const char *fileName, void *data, int dataSize)
             if (result == 0) success = true;
         }
         else TRACELOG(LOG_WARNING, "FILEIO: [%s] Failed to open file", fileName);
-#else
-    TRACELOG(LOG_WARNING, "FILEIO: Standard file io not supported, use custom file callback");
-#endif
     }
     else TRACELOG(LOG_WARNING, "FILEIO: File name provided is not valid");
 
@@ -2143,12 +2124,8 @@ char *LoadFileText(const char *fileName)
 
     if (fileName != NULL)
     {
-        if (loadFileText)
-        {
-            text = loadFileText(fileName);
-            return text;
-        }
-#if defined(SUPPORT_STANDARD_FILEIO)
+        if (loadFileText) return loadFileText(fileName);
+
         FILE *file = fopen(fileName, "rt");
 
         if (file != NULL)
@@ -2184,9 +2161,6 @@ char *LoadFileText(const char *fileName)
             fclose(file);
         }
         else TRACELOG(LOG_WARNING, "FILEIO: [%s] Failed to open text file", fileName);
-#else
-    TRACELOG(LOG_WARNING, "FILEIO: Standard file io not supported, use custom file callback");
-#endif
     }
     else TRACELOG(LOG_WARNING, "FILEIO: File name provided is not valid");
 
@@ -2206,11 +2180,8 @@ bool SaveFileText(const char *fileName, const char *text)
 
     if (fileName != NULL)
     {
-        if (saveFileText)
-        {
-            return saveFileText(fileName, text);
-        }
-#if defined(SUPPORT_STANDARD_FILEIO)
+        if (saveFileText) return saveFileText(fileName, text);
+
         FILE *file = fopen(fileName, "wt");
 
         if (file != NULL)
@@ -2224,9 +2195,6 @@ bool SaveFileText(const char *fileName, const char *text)
             if (result == 0) success = true;
         }
         else TRACELOG(LOG_WARNING, "FILEIO: [%s] Failed to open text file", fileName);
-#else
-    TRACELOG(LOG_WARNING, "FILEIO: Standard file io not supported, use custom file callback");
-#endif
     }
     else TRACELOG(LOG_WARNING, "FILEIO: File name provided is not valid");
 
@@ -2336,7 +2304,7 @@ int FileTextReplace(const char *fileName, const char *search, const char *replac
     char *fileText = NULL;
     char *fileTextUpdated = { 0 };
 
-#if defined(SUPPORT_MODULE_RTEXT)
+#if SUPPORT_MODULE_RTEXT
     if (FileExists(fileName))
     {
         fileText = LoadFileText(fileName);
@@ -3029,7 +2997,7 @@ unsigned char *CompressData(const unsigned char *data, int dataSize, int *compDa
 
     unsigned char *compData = NULL;
 
-#if defined(SUPPORT_COMPRESSION_API)
+#if SUPPORT_COMPRESSION_API
     // Compress data and generate a valid DEFLATE stream
     struct sdefl *sdefl = (struct sdefl *)RL_CALLOC(1, sizeof(struct sdefl));   // WARNING: Possible stack overflow, struct sdefl is almost 1MB
     int bounds = sdefl_bound(dataSize);
@@ -3049,7 +3017,7 @@ unsigned char *DecompressData(const unsigned char *compData, int compDataSize, i
 {
     unsigned char *data = NULL;
 
-#if defined(SUPPORT_COMPRESSION_API)
+#if SUPPORT_COMPRESSION_API
     // Decompress data from a valid DEFLATE stream
     unsigned char *data0 = (unsigned char *)RL_CALLOC(MAX_DECOMPRESSION_SIZE*1024*1024, 1);
     int size = sinflate(data0, MAX_DECOMPRESSION_SIZE*1024*1024, compData, compDataSize);
@@ -3586,7 +3554,7 @@ AutomationEventList LoadAutomationEventList(const char *fileName)
     list.events = (AutomationEvent *)RL_CALLOC(MAX_AUTOMATION_EVENTS, sizeof(AutomationEvent));
     list.capacity = MAX_AUTOMATION_EVENTS;
 
-#if defined(SUPPORT_AUTOMATION_EVENTS)
+#if SUPPORT_AUTOMATION_EVENTS
     if (fileName == NULL) TRACELOG(LOG_INFO, "AUTOMATION: New empty events list loaded successfully");
     else
     {
@@ -3662,7 +3630,7 @@ AutomationEventList LoadAutomationEventList(const char *fileName)
 // Unload automation events list from file
 void UnloadAutomationEventList(AutomationEventList list)
 {
-#if defined(SUPPORT_AUTOMATION_EVENTS)
+#if SUPPORT_AUTOMATION_EVENTS
     RL_FREE(list.events);
 #endif
 }
@@ -3672,7 +3640,7 @@ bool ExportAutomationEventList(AutomationEventList list, const char *fileName)
 {
     bool success = false;
 
-#if defined(SUPPORT_AUTOMATION_EVENTS)
+#if SUPPORT_AUTOMATION_EVENTS
     // Export events as binary file
     // NOTE: Code not used, only for reference if required in the future
     /*
@@ -3730,7 +3698,7 @@ bool ExportAutomationEventList(AutomationEventList list, const char *fileName)
 // Setup automation event list to record to
 void SetAutomationEventList(AutomationEventList *list)
 {
-#if defined(SUPPORT_AUTOMATION_EVENTS)
+#if SUPPORT_AUTOMATION_EVENTS
     currentEventList = list;
 #endif
 }
@@ -3744,7 +3712,7 @@ void SetAutomationEventBaseFrame(int frame)
 // Start recording automation events (AutomationEventList must be set)
 void StartAutomationEventRecording(void)
 {
-#if defined(SUPPORT_AUTOMATION_EVENTS)
+#if SUPPORT_AUTOMATION_EVENTS
     automationEventRecording = true;
 #endif
 }
@@ -3752,7 +3720,7 @@ void StartAutomationEventRecording(void)
 // Stop recording automation events
 void StopAutomationEventRecording(void)
 {
-#if defined(SUPPORT_AUTOMATION_EVENTS)
+#if SUPPORT_AUTOMATION_EVENTS
     automationEventRecording = false;
 #endif
 }
@@ -3760,7 +3728,7 @@ void StopAutomationEventRecording(void)
 // Play a recorded automation event
 void PlayAutomationEvent(AutomationEvent event)
 {
-#if defined(SUPPORT_AUTOMATION_EVENTS)
+#if SUPPORT_AUTOMATION_EVENTS
     // WARNING: When should event be played? After/before/replace PollInputEvents()? -> Up to the user!
 
     if (!automationEventRecording)
@@ -3809,7 +3777,7 @@ void PlayAutomationEvent(AutomationEvent event)
             {
                 CORE.Input.Gamepad.axisState[event.params[0]][event.params[1]] = ((float)event.params[2]/32768.0f);
             } break;
-    #if defined(SUPPORT_GESTURES_SYSTEM)
+    #if SUPPORT_GESTURES_SYSTEM
             case INPUT_GESTURE: GESTURES.current = event.params[0]; break;     // param[0]: gesture (enum Gesture) -> rgestures.h: GESTURES.current
     #endif
             // Window event
@@ -3817,9 +3785,8 @@ void PlayAutomationEvent(AutomationEvent event)
             case WINDOW_MAXIMIZE: MaximizeWindow(); break;
             case WINDOW_MINIMIZE: MinimizeWindow(); break;
             case WINDOW_RESIZE: SetWindowSize(event.params[0], event.params[1]); break;
-
             // Custom event
-    #if defined(SUPPORT_SCREEN_CAPTURE)
+    #if SUPPORT_SCREEN_CAPTURE
             case ACTION_TAKE_SCREENSHOT:
             {
                 TakeScreenshot(TextFormat("screenshot%03i.png", screenshotCounter));
@@ -4263,7 +4230,7 @@ void InitTimer(void)
     // However, it can also reduce overall system performance, because the thread scheduler switches tasks more often
     // High resolutions can also prevent the CPU power management system from entering power-saving modes
     // Setting a higher resolution does not improve the accuracy of the high-resolution performance counter
-#if defined(_WIN32) && defined(SUPPORT_WINMM_HIGHRES_TIMER) && !defined(SUPPORT_BUSY_WAIT_LOOP) && !defined(PLATFORM_DESKTOP_SDL)
+#if defined(_WIN32) && SUPPORT_WINMM_HIGHRES_TIMER && !SUPPORT_BUSY_WAIT_LOOP && !defined(PLATFORM_DESKTOP_SDL)
     timeBeginPeriod(1); // Setup high-resolution timer to 1ms (granularity of 1-2 ms)
 #endif
 
@@ -4356,7 +4323,7 @@ static void ScanDirectoryFiles(const char *basePath, FilePathList *files, const 
     else TRACELOG(LOG_WARNING, "FILEIO: Directory cannot be opened (%s)", basePath);  // Maybe it's a file...
 }
 
-#if defined(SUPPORT_AUTOMATION_EVENTS)
+#if SUPPORT_AUTOMATION_EVENTS
 // Automation event recording
 // Checking events in current frame and save them into currentEventList
 // NOTE: Recording is by default done at EndDrawing(), before PollInputEvents()
@@ -4597,7 +4564,7 @@ static void RecordAutomationEvent(void)
     }
     //-------------------------------------------------------------------------------------
 
-#if defined(SUPPORT_GESTURES_SYSTEM)
+#if SUPPORT_GESTURES_SYSTEM
     // Gestures input currentEventList->events recording
     //-------------------------------------------------------------------------------------
     if (GESTURES.current != GESTURE_NONE)
@@ -4659,5 +4626,4 @@ const char *TextFormat(const char *text, ...)
 
     return currentBuffer;
 }
-
-#endif // !SUPPORT_MODULE_RTEXT
+#endif
