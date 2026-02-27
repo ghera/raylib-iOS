@@ -529,22 +529,6 @@ const char *TextFormat(const char *text, ...); // Formatting of text with variab
     #define PLATFORM_DESKTOP_GLFW
 #endif
 
-// Using '#pragma message' because '#warning' is not adopted by MSVC
-#if SUPPORT_CLIPBOARD_IMAGE
-    #if !SUPPORT_MODULE_RTEXTURES
-        #pragma message ("WARNING: Enabling SUPPORT_CLIPBOARD_IMAGE requires SUPPORT_MODULE_RTEXTURES to work properly")
-    #endif
-
-    // It's nice to have support Bitmap on Linux as well, but not as necessary as Windows
-    #if !SUPPORT_FILEFORMAT_BMP && defined(_WIN32)
-        #pragma message ("WARNING: Enabling SUPPORT_CLIPBOARD_IMAGE requires SUPPORT_FILEFORMAT_BMP, specially on Windows")
-    #endif
-
-    // From what I've tested applications on Wayland saves images on clipboard as PNG
-    #if (!SUPPORT_FILEFORMAT_PNG || !SUPPORT_FILEFORMAT_JPG) && !defined(_WIN32)
-        #pragma message ("WARNING: Getting image from the clipboard might not work without SUPPORT_FILEFORMAT_PNG or SUPPORT_FILEFORMAT_JPG")
-    #endif
-#endif
 
 // Include platform-specific submodules
 #if defined(PLATFORM_DESKTOP_GLFW)
@@ -1611,7 +1595,7 @@ int GetFPS(void)
 {
     int fps = 0;
 
-#if !defined(SUPPORT_CUSTOM_FRAME_CONTROL)
+#if !SUPPORT_CUSTOM_FRAME_CONTROL
     #define FPS_CAPTURE_FRAMES_COUNT    30      // 30 captures
     #define FPS_AVERAGE_TIME_SECONDS   0.5f     // 500 milliseconds
     #define FPS_STEP (FPS_AVERAGE_TIME_SECONDS/FPS_CAPTURE_FRAMES_COUNT)
@@ -3550,11 +3534,11 @@ AutomationEventList LoadAutomationEventList(const char *fileName)
 {
     AutomationEventList list = { 0 };
 
+#if SUPPORT_AUTOMATION_EVENTS
     // Allocate and empty automation event list, ready to record new events
     list.events = (AutomationEvent *)RL_CALLOC(MAX_AUTOMATION_EVENTS, sizeof(AutomationEvent));
     list.capacity = MAX_AUTOMATION_EVENTS;
-
-#if SUPPORT_AUTOMATION_EVENTS
+    
     if (fileName == NULL) TRACELOG(LOG_INFO, "AUTOMATION: New empty events list loaded successfully");
     else
     {
@@ -4586,7 +4570,7 @@ static void RecordAutomationEvent(void)
 }
 #endif
 
-#if !defined(SUPPORT_MODULE_RTEXT)
+#if !SUPPORT_MODULE_RTEXT
 // Formatting of text with variables to 'embed'
 // WARNING: String returned will expire after this function is called MAX_TEXTFORMAT_BUFFERS times
 const char *TextFormat(const char *text, ...)
