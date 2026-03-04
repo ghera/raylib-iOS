@@ -48,7 +48,7 @@
 *           recommended under specific situations and only if the developers know
 *           what are they doing; this flag is not defined by default
 *
-*       rlsw capabilities could be customized just defining some internal
+*       rlsw capabilities could be customized defining some internal
 *       values before library inclusion (default values listed):
 *
 *           #define SW_GL_FRAMEBUFFER_COPY_BGRA     true
@@ -3446,7 +3446,7 @@ static inline bool sw_is_texture_valid(uint32_t id)
     else if (id >= SW_MAX_TEXTURES) valid = false;
     else if (RLSW.loadedTextures[id].pixels == NULL) valid = false;
 
-    return true;
+    return valid;
 }
 
 static inline bool sw_is_texture_filter_valid(int filter)

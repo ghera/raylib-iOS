@@ -517,7 +517,7 @@ static void RecordAutomationEvent(void); // Record frame events (to internal eve
 #endif
 
 #if defined(_WIN32) && !defined(PLATFORM_DESKTOP_RGFW)
-// NOTE: We declare Sleep() function symbol to avoid including windows.h (kernel32.lib linkage required)
+// NOTE: Declaring Sleep() function symbol to avoid including windows.h (kernel32.lib linkage required)
 __declspec(dllimport) void __stdcall Sleep(unsigned long msTimeout); // Required for: WaitTime()
 #endif
 
@@ -705,12 +705,12 @@ void InitWindow(int width, int height, const char *title)
     Rectangle rec = GetFontDefault().recs[95];
     if (FLAG_IS_SET(CORE.Window.flags, FLAG_MSAA_4X_HINT))
     {
-        // NOTE: We try to maxime rec padding to avoid pixel bleeding on MSAA filtering
+        // NOTE: Try to maxime rec padding to avoid pixel bleeding on MSAA filtering
         SetShapesTexture(GetFontDefault().texture, (Rectangle){ rec.x + 2, rec.y + 2, 1, 1 });
     }
     else
     {
-        // NOTE: We set up a 1px padding on char rectangle to avoid pixel bleeding
+        // NOTE: Set up a 1px padding on char rectangle to avoid pixel bleeding
         SetShapesTexture(GetFontDefault().texture, (Rectangle){ rec.x + 1, rec.y + 1, rec.width - 2, rec.height - 2 });
     }
     #endif
@@ -1046,7 +1046,7 @@ void EndTextureMode(void)
     // Set viewport to default framebuffer size
     SetupViewport(CORE.Window.render.width, CORE.Window.render.height);
 
-    // Go back to the modelview state from BeginDrawing since we are back to the default FBO
+    // Go back to the modelview state from BeginDrawing, back to the main framebuffer
     rlMatrixMode(RL_MODELVIEW);     // Switch back to modelview matrix
     rlLoadIdentity();               // Reset current matrix (modelview)
     rlMultMatrixf(MatrixToFloat(CORE.Window.screenScale)); // Apply screen scaling if required
@@ -1083,7 +1083,7 @@ void EndBlendMode(void)
 }
 
 // Begin scissor mode (define screen area for following drawing)
-// NOTE: Scissor rec refers to bottom-left corner, we change it to upper-left
+// NOTE: Scissor rec refers to bottom-left corner, changing it to upper-left
 void BeginScissorMode(int x, int y, int width, int height)
 {
     rlDrawRenderBatchActive();      // Update and draw internal render batch
@@ -1186,9 +1186,9 @@ VrStereoConfig LoadVrStereoConfig(VrDeviceInfo device)
         config.projection[1] = MatrixMultiply(proj, MatrixTranslate(-projOffset, 0.0f, 0.0f));
 
         // Compute camera transformation matrices
-        // NOTE: Camera movement might seem more natural if we model the head
-        // Our axis of rotation is the base of our head, so we might want to add
-        // some y (base of head to eye level) and -z (center of head to eye protrusion) to the camera positions
+        // NOTE: Camera movement might seem more natural if modelling the head
+        // Axis of rotation is the base of the head, so adding some y (base of head to eye level
+        // and -z (center of head to eye protrusion) to the camera positions
         config.viewOffset[0] = MatrixTranslate(device.interpupillaryDistance*0.5f, 0.075f, 0.045f);
         config.viewOffset[1] = MatrixTranslate(-device.interpupillaryDistance*0.5f, 0.075f, 0.045f);
 
@@ -1251,15 +1251,15 @@ Shader LoadShaderFromMemory(const char *vsCode, const char *fsCode)
 
     if (shader.id == 0)
     {
-        // Shader could not be loaded but we still load the location points to avoid potential crashes
-        // NOTE: All locations set to -1 (no location)
+        // Shader could not be loaded but still loading the location points to avoid potential crashes
+        // NOTE: All locations set to -1 (no location found)
         shader.locs = (int *)RL_CALLOC(RL_MAX_SHADER_LOCATIONS, sizeof(int));
         for (int i = 0; i < RL_MAX_SHADER_LOCATIONS; i++) shader.locs[i] = -1;
     }
     else if (shader.id == rlGetShaderIdDefault()) shader.locs = rlGetShaderLocsDefault();
     else if (shader.id > 0)
     {
-        // After custom shader loading, we TRY to set default location names
+        // After custom shader loading, trying to set default location names
         // Default shader attribute locations have been binded before linking:
         //  - vertex position location    = 0
         //  - vertex texcoord location    = 1
@@ -1452,7 +1452,7 @@ Ray GetScreenToWorldRayEx(Vector2 position, Camera camera, int width, int height
     Vector3 farPoint = Vector3Unproject((Vector3){ deviceCoords.x, deviceCoords.y, 1.0f }, matProj, matView);
 
     // Unproject the mouse cursor in the near plane
-    // We need this as the source position because orthographic projects,
+    // It is needed as the source position because orthographic projects,
     // compared to perspective doesn't have a convergence point,
     // meaning that the "eye" of the camera is more like a plane than a point
     Vector3 cameraPlanePointerPos = Vector3Unproject((Vector3){ deviceCoords.x, deviceCoords.y, -1.0f }, matProj, matView);
@@ -1488,7 +1488,7 @@ Matrix GetCameraMatrix2D(Camera2D camera)
     //      not for the camera getting bigger, hence the invert. Same deal with rotation
     //   3. Move it by (-offset);
     //      Offset defines target transform relative to screen, but since effectively "moving" screen (camera)
-    //      we need to do it into opposite direction (inverse transform)
+    //      it needs to be moved into opposite direction (inverse transform)
 
     // Having camera transform in world-space, inverse of it gives the modelview transform
     // Since (A*B*C)' = C'*B'*A', the modelview is
@@ -1590,7 +1590,7 @@ void SetTargetFPS(int fps)
 }
 
 // Get current FPS
-// NOTE: We calculate an average framerate
+// NOTE: Calculating an average framerate
 int GetFPS(void)
 {
     int fps = 0;
@@ -1605,7 +1605,7 @@ int GetFPS(void)
     static float average = 0, last = 0;
     float fpsFrame = GetFrameTime();
 
-    // if we reset the window, reset the FPS info
+    // If reseting the window, reset the FPS info
     if (CORE.Time.frameCounter == 0)
     {
         average = 0;
@@ -1648,7 +1648,7 @@ float GetFrameTime(void)
 
 // Wait for some time (stop program execution)
 // NOTE: Sleep() granularity could be around 10 ms, it means, Sleep() could
-// take longer than expected... for that reason we use the busy wait loop
+// take longer than expected... for that reason a busy wait loop is used
 // REF: http://stackoverflow.com/questions/43057578/c-programming-win32-games-sleep-taking-longer-than-expected
 // REF: http://www.geisswerks.com/ryan/FAQS/timing.html --> All about timing on Win32!
 void WaitTime(double seconds)
@@ -1663,7 +1663,7 @@ void WaitTime(double seconds)
     while (GetTime() < destinationTime) { }
 #else
     #if SUPPORT_PARTIALBUSY_WAIT_LOOP
-        double sleepSeconds = seconds - seconds*0.05;  // NOTE: We reserve a percentage of the time for busy waiting
+        double sleepSeconds = seconds - seconds*0.05;  // NOTE: Reserve a percentage of the time for busy waiting
     #else
         double sleepSeconds = seconds;
     #endif
@@ -1822,7 +1822,7 @@ void TakeScreenshot(const char *fileName)
     // Security check to (partially) avoid malicious code
     if (strchr(fileName, '\'') != NULL) { TRACELOG(LOG_WARNING, "SYSTEM: Provided fileName could be potentially malicious, avoid [\'] character"); return; }
 
-    // Apply a scale if we are doing HIGHDPI auto-scaling
+    // Apply content scaling if required
     Vector2 scale = { 1.0f, 1.0f };
     if (FLAG_IS_SET(CORE.Window.flags, FLAG_WINDOW_HIGHDPI)) scale = GetWindowScaleDPI();
 
@@ -1845,7 +1845,7 @@ void TakeScreenshot(const char *fileName)
 // Setup window configuration flags (view FLAGS)
 // NOTE: This function is expected to be called before window creation,
 // because it sets up some flags for the window creation process
-// To configure window states after creation, just use SetWindowState()
+// To configure window states after creation, use SetWindowState()
 void SetConfigFlags(unsigned int flags)
 {
     if (CORE.Window.ready) TRACELOG(LOG_WARNING, "WINDOW: SetConfigFlags called after window initialization, Use \"SetWindowState\" to set flags instead");
@@ -1977,11 +1977,11 @@ unsigned char *LoadFileData(const char *fileName, int *dataSize)
 
                 if (data != NULL)
                 {
-                    // NOTE: fread() returns number of read elements instead of bytes, so we read [1 byte, size elements]
+                    // NOTE: fread() returns number of read elements instead of bytes, so reading [1 byte, size elements]
                     size_t count = fread(data, sizeof(unsigned char), size, file);
 
                     // WARNING: fread() returns a size_t value, usually 'unsigned int' (32bit compilation) and 'unsigned long long' (64bit compilation)
-                    // dataSize is unified along raylib as a 'int' type, so, for file-sizes > INT_MAX (2147483647 bytes) we have a limitation
+                    // dataSize is unified along raylib as a 'int' type, so, for file-sizes > INT_MAX (2147483647 bytes) there is a limitation
                     if (count > 2147483647)
                     {
                         TRACELOG(LOG_WARNING, "FILEIO: [%s] File is bigger than 2147483647 bytes, avoid using LoadFileData()", fileName);
@@ -2460,7 +2460,7 @@ long GetFileModTime(const char *fileName)
 }
 
 // Get pointer to extension for a filename string (includes the dot: .png)
-// WARNING: We just get the ptr but not the extension as a separate string
+// WARNING: Getting the pointer to the input string extension position (not a string copy)
 const char *GetFileExtension(const char *fileName)
 {
     const char *dot = strrchr(fileName, '.');
@@ -2509,7 +2509,7 @@ const char *GetFileNameWithoutExt(const char *filePath)
         {
             if (fileName[i] == '.')
             {
-                // NOTE: We break on first '.' found
+                // NOTE: Break on first '.' found
                 fileName[i] = '\0';
                 break;
             }
@@ -2535,11 +2535,11 @@ const char *GetDirectoryPath(const char *filePath)
     static char dirPath[MAX_FILEPATH_LENGTH] = { 0 };
     memset(dirPath, 0, MAX_FILEPATH_LENGTH);
 
-    // In case provided path does not contain a root drive letter (C:\, D:\) nor leading path separator (\, /),
-    // we add the current directory path to dirPath
+    // In case provided path does not contain a root drive letter (C:\, D:\)
+    // nor leading path separator (\, /), add the current directory path to dirPath
     if ((filePath[1] != ':') && (filePath[0] != '\\') && (filePath[0] != '/'))
     {
-        // For security, we set starting path to current directory,
+        // For security, set starting path to current directory,
         // obtained path will be concatenated to this
         dirPath[0] = '.';
         dirPath[1] = '/';
@@ -2938,7 +2938,7 @@ unsigned int GetDirectoryFileCountEx(const char *basePath, const char *filter, b
     {
         while ((entity = readdir(dir)) != NULL)
         {
-            // NOTE: We skip '.' (current dir) and '..' (parent dir) filepaths
+            // NOTE: Skipping '.' (current dir) and '..' (parent dir) filepaths
             if ((strcmp(entity->d_name, ".") != 0) && (strcmp(entity->d_name, "..") != 0))
             {
                 // Construct new path from our base path
@@ -3008,7 +3008,7 @@ unsigned char *DecompressData(const unsigned char *compData, int compDataSize, i
 
     // WARNING: RL_REALLOC can make (and leave) data copies in memory,
     // that can be a security concern in case of compression of sensitive data
-    // So, we use a second buffer to copy data manually, wiping original buffer memory
+    // So, using a second buffer to copy data manually, wiping original buffer memory
     data = (unsigned char *)RL_CALLOC(size, 1);
     memcpy(data, data0, size);
     memset(data0, 0, MAX_DECOMPRESSION_SIZE*1024*1024); // Wipe memory, is memset() safe?
@@ -3538,7 +3538,7 @@ AutomationEventList LoadAutomationEventList(const char *fileName)
     // Allocate and empty automation event list, ready to record new events
     list.events = (AutomationEvent *)RL_CALLOC(MAX_AUTOMATION_EVENTS, sizeof(AutomationEvent));
     list.capacity = MAX_AUTOMATION_EVENTS;
-    
+
     if (fileName == NULL) TRACELOG(LOG_INFO, "AUTOMATION: New empty events list loaded successfully");
     else
     {
@@ -4582,7 +4582,7 @@ const char *TextFormat(const char *text, ...)
     #define MAX_TEXT_BUFFER_LENGTH   1024        // Maximum size of static text buffer
 #endif
 
-    // We create an array of buffers so strings don't expire until MAX_TEXTFORMAT_BUFFERS invocations
+    // Define an array of buffers, so strings don't expire until MAX_TEXTFORMAT_BUFFERS invocations
     static char buffers[MAX_TEXTFORMAT_BUFFERS][MAX_TEXT_BUFFER_LENGTH] = { 0 };
     static int index = 0;
 

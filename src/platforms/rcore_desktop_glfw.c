@@ -837,7 +837,7 @@ int GetCurrentMonitor(void)
         {
             // In case the window is between two monitors, below logic is used
             // to try to detect the "current monitor" for that window, note that
-            // this is probably an overengineered solution for a very side case
+            // this is probably an overengineered solution for a side case
             // trying to match SDL behaviour
 
             int closestDist = 0x7FFFFFFF;
@@ -1258,7 +1258,7 @@ void PollInputEvents(void)
 {
 #if SUPPORT_GESTURES_SYSTEM
     // NOTE: Gestures update must be called every frame to reset gestures correctly
-    // because ProcessGestureEvent() is just called on an event, not every frame
+    // because ProcessGestureEvent() is called on an event, not every frame
     UpdateGestures();
 #endif
 
@@ -1522,7 +1522,7 @@ int InitPlatform(void)
         glfwWindowHint(GLFW_SCALE_FRAMEBUFFER, GLFW_FALSE);
 #endif
 #if defined(_GLFW_WAYLAND) && !defined(_GLFW_X11)
-        // GLFW 3.4+ defaults GLFW_SCALE_FRAMEBUFFER to TRUE, 
+        // GLFW 3.4+ defaults GLFW_SCALE_FRAMEBUFFER to TRUE,
         // causing framebuffer/window size mismatch on Wayland with display scaling
         glfwWindowHint(GLFW_SCALE_FRAMEBUFFER, GLFW_FALSE);
 #endif
@@ -1588,7 +1588,7 @@ int InitPlatform(void)
     }
 
     // NOTE: GLFW 3.4+ defers initialization of the Joystick subsystem on the first call to any Joystick related functions
-    // Forcing this initialization here avoids doing it on PollInputEvents() called by EndDrawing() after first frame has been just drawn
+    // Forcing this initialization here avoids doing it on PollInputEvents() called by EndDrawing() after first frame has been drawn
     // The initialization will still happen and possible delays still occur, but before the window is shown, which is a nicer experience
     // REF: https://github.com/raysan5/raylib/issues/1554
     glfwSetJoystickCallback(NULL);
@@ -1727,12 +1727,12 @@ int InitPlatform(void)
 #if !defined(__APPLE__)
             if (glfwGetPlatform() == GLFW_PLATFORM_WAYLAND)
             {
-                // On Wayland, GLFW_SCALE_FRAMEBUFFER handles scaling; read actual framebuffer size 
+                // On Wayland, GLFW_SCALE_FRAMEBUFFER handles scaling; read actual framebuffer size
                 // instead of resizing the window (which would double-scale)
                 int fbWidth = 0;
                 int fbHeight = 0;
                 glfwGetFramebufferSize(platform.handle, &fbWidth, &fbHeight);
-                
+
                 CORE.Window.render.width = fbWidth;
                 CORE.Window.render.height = fbHeight;
             }
@@ -1751,7 +1751,7 @@ int InitPlatform(void)
         // Current active framebuffer size is main framebuffer size
         CORE.Window.currentFbo = CORE.Window.render;
 
-        TRACELOG(LOG_INFO, "DISPLAY: Device initialized successfully %s", 
+        TRACELOG(LOG_INFO, "DISPLAY: Device initialized successfully %s",
             FLAG_IS_SET(CORE.Window.flags, FLAG_WINDOW_HIGHDPI)? "(HighDPI)" : "");
         TRACELOG(LOG_INFO, "    > Display size: %i x %i", CORE.Window.display.width, CORE.Window.display.height);
         TRACELOG(LOG_INFO, "    > Screen size:  %i x %i", CORE.Window.screen.width, CORE.Window.screen.height);
@@ -1935,14 +1935,14 @@ static void FramebufferSizeCallback(GLFWwindow *window, int width, int height)
             int winWidth = 0;
             int winHeight = 0;
             glfwGetWindowSize(platform.handle, &winWidth, &winHeight);
-            
+
             if ((winWidth != width) || (winHeight != height))
             {
                 CORE.Window.screen.width = winWidth;
                 CORE.Window.screen.height = winHeight;
                 float scaleX = (float)width/winWidth;
                 float scaleY = (float)height/winHeight;
-                
+
                 CORE.Window.screenScale = MatrixScale(scaleX, scaleY, 1.0f);
             }
         }
@@ -2178,16 +2178,19 @@ static void CursorEnterCallback(GLFWwindow *window, int enter)
 // GLFW3: Joystick connected/disconnected callback
 static void JoystickCallback(int jid, int event)
 {
-    if (event == GLFW_CONNECTED)
+    if (jid < MAX_GAMEPADS)
     {
-        // WARNING: If glfwGetJoystickName() is longer than MAX_GAMEPAD_NAME_LENGTH,
-        // only copy up to (MAX_GAMEPAD_NAME_LENGTH -1) to destination string
-        memset(CORE.Input.Gamepad.name[jid], 0, MAX_GAMEPAD_NAME_LENGTH);
-        strncpy(CORE.Input.Gamepad.name[jid], glfwGetJoystickName(jid), MAX_GAMEPAD_NAME_LENGTH - 1);
-    }
-    else if (event == GLFW_DISCONNECTED)
-    {
-        memset(CORE.Input.Gamepad.name[jid], 0, MAX_GAMEPAD_NAME_LENGTH);
+        if (event == GLFW_CONNECTED)
+        {
+            // WARNING: If glfwGetJoystickName() is longer than MAX_GAMEPAD_NAME_LENGTH,
+            // only copy up to (MAX_GAMEPAD_NAME_LENGTH -1) to destination string
+            memset(CORE.Input.Gamepad.name[jid], 0, MAX_GAMEPAD_NAME_LENGTH);
+            strncpy(CORE.Input.Gamepad.name[jid], glfwGetJoystickName(jid), MAX_GAMEPAD_NAME_LENGTH - 1);
+        }
+        else if (event == GLFW_DISCONNECTED)
+        {
+            memset(CORE.Input.Gamepad.name[jid], 0, MAX_GAMEPAD_NAME_LENGTH);
+        }
     }
 }
 
