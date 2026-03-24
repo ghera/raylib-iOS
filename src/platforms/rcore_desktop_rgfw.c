@@ -1447,15 +1447,35 @@ void PollInputEvents(void)
             } break;
             case RGFW_mousePosChanged:
             {
+                float mouseX = 0.0f;
+                float mouseY = 0.0f;
                 if (RGFW_window_isCaptured(platform.window))
                 {
-                    CORE.Input.Mouse.currentPosition.x += (float)rgfw_event.mouse.vecX;
-                    CORE.Input.Mouse.currentPosition.y += (float)rgfw_event.mouse.vecY;
+                    mouseX = (float)rgfw_event.mouse.vecX;
+                    mouseY = (float)rgfw_event.mouse.vecY;
                 }
                 else
                 {
-                    CORE.Input.Mouse.currentPosition.x = (float)rgfw_event.mouse.x;
-                    CORE.Input.Mouse.currentPosition.y = (float)rgfw_event.mouse.y;
+                    mouseX = (float)rgfw_event.mouse.x;
+                    mouseY = (float)rgfw_event.mouse.y;
+                }
+
+#if defined(__EMSCRIPTEN__)
+                double canvasWidth = 0.0;
+                double canvasHeight = 0.0;
+                emscripten_get_element_css_size("#canvas", &canvasWidth, &canvasHeight);
+                mouseX *= ((float)GetScreenWidth()/(float)canvasWidth);
+                mouseY *= ((float)GetScreenHeight()/(float)canvasHeight);
+#endif
+                if (RGFW_window_isCaptured(platform.window))
+                {
+                    CORE.Input.Mouse.currentPosition.x += mouseX;
+                    CORE.Input.Mouse.currentPosition.y += mouseY;
+                }
+                else
+                {
+                    CORE.Input.Mouse.currentPosition.x = mouseX;
+                    CORE.Input.Mouse.currentPosition.y = mouseY;
                 }
 
                 CORE.Input.Touch.position[0] = CORE.Input.Mouse.currentPosition;
