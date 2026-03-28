@@ -688,7 +688,7 @@ void InitWindow(int width, int height, const char *title)
     }
 
     // Initialize render dimensions for embedded platforms
-    // NOTE: On desktop platforms (GLFW, SDL, etc.), CORE.Window.render.width/height are set during window creation 
+    // NOTE: On desktop platforms (GLFW, SDL, etc.), CORE.Window.render.width/height are set during window creation
     // On embedded platforms with no window manager, InitPlatform() doesn't set these values, so they should be initialized
     // here from screen dimensions (which are set from the InitWindow parameters)
     if ((CORE.Window.render.width == 0) || (CORE.Window.render.height == 0))
@@ -1231,7 +1231,7 @@ void UnloadVrStereoConfig(VrStereoConfig config)
 //----------------------------------------------------------------------------------
 
 // Load shader from files and bind default locations
-// NOTE: If shader string is NULL, using default vertex/fragment shaders
+// NOTE: If shader filename is NULL, using default vertex/fragment shaders
 Shader LoadShader(const char *vsFileName, const char *fsFileName)
 {
     Shader shader = { 0 };
@@ -2302,7 +2302,7 @@ int FileTextReplace(const char *fileName, const char *search, const char *replac
     if (FileExists(fileName))
     {
         fileText = LoadFileText(fileName);
-        fileTextUpdated = TextReplace(fileText, search, replacement);
+        fileTextUpdated = TextReplaceAlloc(fileText, search, replacement);
         result = SaveFileText(fileName, fileTextUpdated);
         MemFree(fileTextUpdated);
         UnloadFileText(fileText);
