@@ -405,8 +405,7 @@ ifeq ($(TARGET_PLATFORM),PLATFORM_ANDROID)
     CFLAGS += -Wa,--noexecstack -Wformat -no-canonical-prefixes
     # Preprocessor macro definitions
     CFLAGS += -D__ANDROID__ -DPLATFORM_ANDROID -D__ANDROID_API__=$(ANDROID_API_VERSION)
-    CFLAGS += -DRLGL_ENABLE_GLES_DEFAULT_HIGHP_PRECISION=1
-  endif
+endif
 
 # Define required compilation flags for raylib SHARED lib
 ifeq ($(RAYLIB_LIBTYPE),SHARED)

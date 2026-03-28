@@ -75,10 +75,6 @@ if (${PLATFORM} MATCHES "Web")
     endif()
 endif()
 
-if (${PLATFORM} MATCHES "Android")
-    target_compile_definitions(raylib PRIVATE RLGL_ENABLE_GLES_DEFAULT_HIGHP_PRECISION=1)
-endif()
-
 set_target_properties(raylib PROPERTIES
                       PUBLIC_HEADER "${raylib_public_headers}"
                       VERSION ${PROJECT_VERSION}
