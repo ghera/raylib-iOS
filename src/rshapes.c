@@ -8,18 +8,18 @@
 *       are used but QUADS implementation can be selected with SUPPORT_QUADS_DRAW_MODE define
 *
 *       Some functions define texture coordinates (rlTexCoord2f()) for the shapes and use a
-*       user-provided texture with SetShapesTexture(), the pourpouse of this implementation
+*       user-provided texture with SetShapesTexture(), the purpose of this implementation
 *       is allowing to reduce draw calls when combined with a texture-atlas
 *
 *       By default, raylib sets the default texture and rectangle at InitWindow()[rcore] to one
-*       white character of default font [rtext], this way, raylib text and shapes can be draw with
+*       white character of default font [rtext], this way, raylib text and shapes can be drawn with
 *       a single draw call and it also allows users to configure it the same way with their own fonts
 *
 *   CONFIGURATION:
-*       #define SUPPORT_MODULE_RSHAPES
+*       #define SUPPORT_MODULE_RSHAPES 1
 *           rshapes module is included in the build
 *
-*       #define SUPPORT_QUADS_DRAW_MODE
+*       #define SUPPORT_QUADS_DRAW_MODE 1
 *           Use QUADS instead of TRIANGLES for drawing when possible. Lines-based shapes still use LINES
 *
 *
@@ -327,6 +327,22 @@ void DrawCircleV(Vector2 center, float radius, Color color)
     DrawCircleSector(center, radius, 0, 360, 36, color);
 }
 
+// Draw a gradient-filled circle
+void DrawCircleGradient(Vector2 center, float radius, Color inner, Color outer)
+{
+    rlBegin(RL_TRIANGLES);
+        for (int i = 0; i < 360; i += 10)
+        {
+            rlColor4ub(inner.r, inner.g, inner.b, inner.a);
+            rlVertex2f(center.x, center.y);
+            rlColor4ub(outer.r, outer.g, outer.b, outer.a);
+            rlVertex2f(center.x + cosf(DEG2RAD*(i + 10))*radius, center.y + sinf(DEG2RAD*(i + 10))*radius);
+            rlColor4ub(outer.r, outer.g, outer.b, outer.a);
+            rlVertex2f(center.x + cosf(DEG2RAD*i)*radius, center.y + sinf(DEG2RAD*i)*radius);
+        }
+    rlEnd();
+}
+
 // Draw a piece of a circle
 void DrawCircleSector(Vector2 center, float radius, float startAngle, float endAngle, int segments, Color color)
 {
@@ -478,22 +494,6 @@ void DrawCircleSectorLines(Vector2 center, float radius, float startAngle, float
             rlColor4ub(color.r, color.g, color.b, color.a);
             rlVertex2f(center.x, center.y);
             rlVertex2f(center.x + cosf(DEG2RAD*angle)*radius, center.y + sinf(DEG2RAD*angle)*radius);
-        }
-    rlEnd();
-}
-
-// Draw a gradient-filled circle
-void DrawCircleGradient(int centerX, int centerY, float radius, Color inner, Color outer)
-{
-    rlBegin(RL_TRIANGLES);
-        for (int i = 0; i < 360; i += 10)
-        {
-            rlColor4ub(inner.r, inner.g, inner.b, inner.a);
-            rlVertex2f((float)centerX, (float)centerY);
-            rlColor4ub(outer.r, outer.g, outer.b, outer.a);
-            rlVertex2f((float)centerX + cosf(DEG2RAD*(i + 10))*radius, (float)centerY + sinf(DEG2RAD*(i + 10))*radius);
-            rlColor4ub(outer.r, outer.g, outer.b, outer.a);
-            rlVertex2f((float)centerX + cosf(DEG2RAD*i)*radius, (float)centerY + sinf(DEG2RAD*i)*radius);
         }
     rlEnd();
 }

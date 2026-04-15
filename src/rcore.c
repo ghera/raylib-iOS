@@ -35,31 +35,31 @@
 *           - Memory framebuffer output, using software renderer, no OS required
 *
 *   CONFIGURATION:
-*       #define SUPPORT_CAMERA_SYSTEM
+*       #define SUPPORT_CAMERA_SYSTEM 1
 *           Camera module is included (rcamera.h) and multiple predefined cameras are available:
 *               free, 1st/3rd person, orbital, custom
 *
-*       #define SUPPORT_GESTURES_SYSTEM
+*       #define SUPPORT_GESTURES_SYSTEM 1
 *           Gestures module is included (rgestures.h) to support gestures detection: tap, hold, swipe, drag
 *
-*       #define SUPPORT_MOUSE_GESTURES
+*       #define SUPPORT_MOUSE_GESTURES 1
 *           Mouse gestures are directly mapped like touches and processed by gestures system
 *
-*       #define SUPPORT_BUSY_WAIT_LOOP
+*       #define SUPPORT_BUSY_WAIT_LOOP 1
 *           Use busy wait loop for timing sync, if not defined, a high-resolution timer is setup and used
 *
-*       #define SUPPORT_PARTIALBUSY_WAIT_LOOP
+*       #define SUPPORT_PARTIALBUSY_WAIT_LOOP 0
 *           Use a partial-busy wait loop, in this case frame sleeps for most of the time and runs a busy-wait-loop at the end
 *
-*       #define SUPPORT_SCREEN_CAPTURE
+*       #define SUPPORT_SCREEN_CAPTURE 1
 *           Allow automatic screen capture of current screen pressing F12, defined in KeyCallback()
 *
-*       #define SUPPORT_COMPRESSION_API
+*       #define SUPPORT_COMPRESSION_API 1
 *           Support CompressData() and DecompressData() functions, those functions use zlib implementation
 *           provided by stb_image and stb_image_write libraries, so, those libraries must be enabled on textures module
 *           for linkage
 *
-*       #define SUPPORT_AUTOMATION_EVENTS
+*       #define SUPPORT_AUTOMATION_EVENTS 1
 *           Support automatic events recording and playing, useful for automated testing systems or AI based game playing
 *
 *   DEPENDENCIES:
@@ -307,7 +307,7 @@ typedef struct CoreData {
         Size screen;                        // Screen current width and height
         Point position;                     // Window current position
         Size previousScreen;                // Screen previous width and height (required on fullscreen/borderless-windowed toggle)
-        Point previousPosition;             // Window previous position (required on fullscreeen/borderless-windowed toggle)
+        Point previousPosition;             // Window previous position (required on fullscreen/borderless-windowed toggle)
         Size render;                        // Screen framebuffer width and height
         Point renderOffset;                 // Screen framebuffer render offset (Not required anymore?)
         Size currentFbo;                    // Current framebuffer render width and height (depends on active render texture)
@@ -329,7 +329,7 @@ typedef struct CoreData {
             char currentKeyState[MAX_KEYBOARD_KEYS]; // Registers current frame key state
             char previousKeyState[MAX_KEYBOARD_KEYS]; // Registers previous frame key state
 
-            // NOTE: Since key press logic involves comparing previous vs currrent key state,
+            // NOTE: Since key press logic involves comparing previous vs current key state,
             // key repeats needs to be handled specially
             char keyRepeatInFrame[MAX_KEYBOARD_KEYS]; // Registers key repeats for current frame
 
@@ -718,7 +718,7 @@ void InitWindow(int width, int height, const char *title)
     Rectangle rec = GetFontDefault().recs[95];
     if (FLAG_IS_SET(CORE.Window.flags, FLAG_MSAA_4X_HINT))
     {
-        // NOTE: Try to maxime rec padding to avoid pixel bleeding on MSAA filtering
+        // NOTE: Try to maximize rec padding to avoid pixel bleeding on MSAA filtering
         SetShapesTexture(GetFontDefault().texture, (Rectangle){ rec.x + 2, rec.y + 2, 1, 1 });
     }
     else
@@ -2518,9 +2518,9 @@ const char *GetFileNameWithoutExt(const char *filePath)
     if (filePath != NULL)
     {
         strncpy(fileName, GetFileName(filePath), MAX_FILENAME_LENGTH - 1); // Get filename.ext without path
-        int fileNameLenght = (int)strlen(fileName); // Get size in bytes
+        int fileNameLength = (int)strlen(fileName); // Get size in bytes
 
-        for (int i = fileNameLenght; i > 0; i--) // Reverse search '.'
+        for (int i = fileNameLength; i > 0; i--) // Reverse search '.'
         {
             if (fileName[i] == '.')
             {
@@ -3043,7 +3043,7 @@ unsigned char *DecompressData(const unsigned char *compData, int compDataSize, i
 char *EncodeDataBase64(const unsigned char *data, int dataSize, int *outputSize)
 {
     // Base64 conversion table from RFC 4648 [0..63]
-    // NOTE: They represent 64 values (6 bits), to encode 3 bytes of data into 4 "sixtets" (6bit characters)
+    // NOTE: They represent 64 values (6 bits), to encode 3 bytes of data into 4 "sextets" (6bit characters)
     static const char base64EncodeTable[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
     // Compute expected size and padding
@@ -3130,7 +3130,7 @@ unsigned char *DecodeDataBase64(const char *text, int *outputSize)
     int outputCount = 0;
     for (int i = 0; i < dataSize;)
     {
-        // Every 4 sixtets must generate 3 octets
+        // Every 4 sextets must generate 3 octets
         if ((i + 2) >= dataSize)
         {
             TRACELOG(LOG_WARNING, "BASE64: Decoding error: Input data size is not valid");
