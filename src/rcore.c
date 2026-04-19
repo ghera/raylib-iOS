@@ -35,31 +35,31 @@
 *           - Memory framebuffer output, using software renderer, no OS required
 *
 *   CONFIGURATION:
-*       #define SUPPORT_CAMERA_SYSTEM 1
+*       #define SUPPORT_CAMERA_SYSTEM       1
 *           Camera module is included (rcamera.h) and multiple predefined cameras are available:
 *               free, 1st/3rd person, orbital, custom
 *
-*       #define SUPPORT_GESTURES_SYSTEM 1
+*       #define SUPPORT_GESTURES_SYSTEM     1
 *           Gestures module is included (rgestures.h) to support gestures detection: tap, hold, swipe, drag
 *
-*       #define SUPPORT_MOUSE_GESTURES 1
+*       #define SUPPORT_MOUSE_GESTURES      1
 *           Mouse gestures are directly mapped like touches and processed by gestures system
 *
-*       #define SUPPORT_BUSY_WAIT_LOOP 1
+*       #define SUPPORT_BUSY_WAIT_LOOP      1
 *           Use busy wait loop for timing sync, if not defined, a high-resolution timer is setup and used
 *
 *       #define SUPPORT_PARTIALBUSY_WAIT_LOOP 0
 *           Use a partial-busy wait loop, in this case frame sleeps for most of the time and runs a busy-wait-loop at the end
 *
-*       #define SUPPORT_SCREEN_CAPTURE 1
+*       #define SUPPORT_SCREEN_CAPTURE      1
 *           Allow automatic screen capture of current screen pressing F12, defined in KeyCallback()
 *
-*       #define SUPPORT_COMPRESSION_API 1
+*       #define SUPPORT_COMPRESSION_API     1
 *           Support CompressData() and DecompressData() functions, those functions use zlib implementation
 *           provided by stb_image and stb_image_write libraries, so, those libraries must be enabled on textures module
 *           for linkage
 *
-*       #define SUPPORT_AUTOMATION_EVENTS 1
+*       #define SUPPORT_AUTOMATION_EVENTS   1
 *           Support automatic events recording and playing, useful for automated testing systems or AI based game playing
 *
 *   DEPENDENCIES:
@@ -379,14 +379,14 @@ typedef struct CoreData {
         } Gamepad;
     } Input;
     struct {
-        double current;                     // Current time measure
-        double previous;                    // Previous time measure
-        double update;                      // Time measure for frame update
-        double draw;                        // Time measure for frame draw
-        double frame;                       // Time measure for one frame
-        double target;                      // Desired time for one frame, if 0 not applied
-        unsigned long long int base;        // Base time measure for hi-res timer (PLATFORM_ANDROID, PLATFORM_DRM)
-        unsigned int frameCounter;          // Frame counter
+        double current;                     // Current time measure (seconds)
+        double previous;                    // Previous time measure (seconds)
+        double update;                      // Time measure for frame update (seconds)
+        double draw;                        // Time measure for frame draw (seconds)
+        double frame;                       // Time measure for one frame (seconds)
+        double target;                      // Desired time for one frame, if 0 not applied (seconds)
+        unsigned long long int base;        // Base time measure for hi-res timer (ticks or nanoseconds)
+        unsigned int frameCounter;          // Frame counter (frames)
 
     } Time;
 } CoreData;

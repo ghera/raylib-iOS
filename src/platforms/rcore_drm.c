@@ -1426,7 +1426,7 @@ int InitPlatform(void)
         if (eglGetPlatformDisplayEXT != NULL) platform.device = eglGetPlatformDisplayEXT(EGL_PLATFORM_GBM_KHR, platform.gbmDevice, NULL);
     }
 
-    // In case extension not found or display could not be retrieved, try useing legacy version
+    // In case extension not found or display could not be retrieved, try using legacy version
     if (platform.device == EGL_NO_DISPLAY) platform.device = eglGetDisplay((EGLNativeDisplayType)platform.gbmDevice);
 #endif
     if (platform.device == EGL_NO_DISPLAY)
@@ -1549,12 +1549,6 @@ int InitPlatform(void)
         CORE.Window.render.height = CORE.Window.screen.height;
         CORE.Window.currentFbo.width = CORE.Window.render.width;
         CORE.Window.currentFbo.height = CORE.Window.render.height;
-
-        TRACELOG(LOG_INFO, "DISPLAY: Device initialized successfully");
-        TRACELOG(LOG_INFO, "    > Display size: %i x %i", CORE.Window.display.width, CORE.Window.display.height);
-        TRACELOG(LOG_INFO, "    > Screen size:  %i x %i", CORE.Window.screen.width, CORE.Window.screen.height);
-        TRACELOG(LOG_INFO, "    > Render size:  %i x %i", CORE.Window.render.width, CORE.Window.render.height);
-        TRACELOG(LOG_INFO, "    > Viewport offsets: %i, %i", CORE.Window.renderOffset.x, CORE.Window.renderOffset.y);
     }
     else
     {
@@ -1580,13 +1574,14 @@ int InitPlatform(void)
     CORE.Window.render.height = CORE.Window.screen.height;
     CORE.Window.currentFbo.width = CORE.Window.render.width;
     CORE.Window.currentFbo.height = CORE.Window.render.height;
+#endif
 
-    TRACELOG(LOG_INFO, "DISPLAY: Device initialized successfully (Software Rendering)");
+    TRACELOG(LOG_INFO, "DISPLAY: Device initialized successfully %s",
+        FLAG_IS_SET(CORE.Window.flags, FLAG_WINDOW_HIGHDPI)? "(HighDPI)" : "");
     TRACELOG(LOG_INFO, "    > Display size: %i x %i", CORE.Window.display.width, CORE.Window.display.height);
     TRACELOG(LOG_INFO, "    > Screen size:  %i x %i", CORE.Window.screen.width, CORE.Window.screen.height);
     TRACELOG(LOG_INFO, "    > Render size:  %i x %i", CORE.Window.render.width, CORE.Window.render.height);
     TRACELOG(LOG_INFO, "    > Viewport offsets: %i, %i", CORE.Window.renderOffset.x, CORE.Window.renderOffset.y);
-#endif
 
     if (FLAG_IS_SET(CORE.Window.flags, FLAG_WINDOW_MINIMIZED)) MinimizeWindow();
 
