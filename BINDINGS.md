@@ -77,6 +77,7 @@ Some people ported raylib to other languages in the form of bindings or wrappers
 | [raylibr](https://github.com/jeroenjanssens/raylibr)                                     | 4.0              | [R](https://www.r-project.org)                                       | MIT                  |
 | [raylib-ffi](https://github.com/ewpratten/raylib-ffi)                                    | 5.5              | [Rust](https://www.rust-lang.org)                                    | GPLv3                |
 | [raylib-rs](https://github.com/raylib-rs/raylib-rs)                                      | **5.5**          | [Rust](https://www.rust-lang.org)                                    | Zlib                 |
+| [sola-raylib](https://github.com/brettchalupa/sola-raylib)                               | **5.5**          | [Rust](https://www.rust-lang.org)                                    | Zlib                 |
 | [raylib-ruby](https://github.com/wilsonsilva/raylib-ruby)                                | 4.5              | [Ruby](https://www.ruby-lang.org)                                    | Zlib                 |
 | [Relib](https://github.com/RedCubeDev-ByteSpace/Relib)                                   | 3.5              | [ReCT](https://github.com/RedCubeDev-ByteSpace/ReCT)                 | **???**              |
 | [racket-raylib](https://github.com/eutro/racket-raylib)                                  | **5.5**          | [Racket](https://racket-lang.org)                                    | MIT/Apache-2.0       |
@@ -86,7 +87,7 @@ Some people ported raylib to other languages in the form of bindings or wrappers
 | [raylib-umka](https://github.com/robloach/raylib-umka)                                   | 4.5              | [Umka](https://github.com/vtereshkov/umka-lang)                      | Zlib                 |
 | [raylib-v](https://github.com/vlang/raylib)                                              | 5.5              | [V](https://vlang.io)                                                | MIT/Unlicense        |
 | [raylib.v](https://github.com/irishgreencitrus/raylib.v)                                 | 4.2              | [V](https://vlang.io)                                                | Zlib                 |
-| [raylib-vapi](https://github.com/lxmcf/raylib-vapi)                                      | **5.0**          | [Vala](https://vala.dev)                                             | Zlib                 |
+| [raylib-vapi](https://github.com/lxmcf/raylib-vapi)                                      | **6.0**          | [Vala](https://vala.dev)                                             | Zlib                 |
 | [raylib-wave](https://github.com/wavefnd/raylib-wave)                                    | **auto**         |[Wave](http://wave-lang.dev)                                          | Zlib                 |
 | [raylib-wren](https://github.com/TSnake41/raylib-wren)                                   | 4.5              | [Wren](http://wren.io)                                               | ISC                  |
 | [raylib-zig](https://github.com/raylib-zig/raylib-zig)                                   | **5.6-dev**      | [Zig](https://ziglang.org)                                           | MIT                  |
