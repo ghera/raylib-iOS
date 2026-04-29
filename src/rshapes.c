@@ -1443,23 +1443,32 @@ void DrawRectangleRoundedLinesEx(Rectangle rec, float roundness, int segments, f
 // NOTE: Vertex must be provided in counter-clockwise order
 void DrawTriangle(Vector2 v1, Vector2 v2, Vector2 v3, Color color)
 {
+    DrawTriangleGradient(v1, v2, v3, color, color, color);
+}
+
+// Draw triangle with interpolated colors (vertex in counter-clockwise order!)
+void DrawTriangleGradient(Vector2 v1, Vector2 v2, Vector2 v3, Color c1, Color c2, Color c3)
+{
 #if SUPPORT_QUADS_DRAW_MODE
     rlSetTexture(GetShapesTexture().id);
     Rectangle shapeRect = GetShapesTextureRectangle();
 
     rlBegin(RL_QUADS);
         rlNormal3f(0.0f, 0.0f, 1.0f);
-        rlColor4ub(color.r, color.g, color.b, color.a);
-
+        
+        rlColor4ub(c1.r, c1.g, c1.b, c1.a);
         rlTexCoord2f(shapeRect.x/texShapes.width, shapeRect.y/texShapes.height);
         rlVertex2f(v1.x, v1.y);
 
+        rlColor4ub(c2.r, c2.g, c2.b, c2.a);
         rlTexCoord2f(shapeRect.x/texShapes.width, (shapeRect.y + shapeRect.height)/texShapes.height);
         rlVertex2f(v2.x, v2.y);
 
+        rlColor4ub(c3.r, c3.g, c3.b, c3.a);
         rlTexCoord2f((shapeRect.x + shapeRect.width)/texShapes.width, (shapeRect.y + shapeRect.height)/texShapes.height);
         rlVertex2f(v3.x, v3.y);
 
+        rlColor4ub(c3.r, c3.g, c3.b, c3.a);
         rlTexCoord2f((shapeRect.x + shapeRect.width)/texShapes.width, shapeRect.y/texShapes.height);
         rlVertex2f(v3.x, v3.y);
     rlEnd();
@@ -1467,9 +1476,11 @@ void DrawTriangle(Vector2 v1, Vector2 v2, Vector2 v3, Color color)
     rlSetTexture(0);
 #else
     rlBegin(RL_TRIANGLES);
-        rlColor4ub(color.r, color.g, color.b, color.a);
+        rlColor4ub(c1.r, c1.g, c1.b, c1.a);
         rlVertex2f(v1.x, v1.y);
+        rlColor4ub(c2.r, c2.g, c2.b, c2.a);
         rlVertex2f(v2.x, v2.y);
+        rlColor4ub(c3.r, c3.g, c3.b, c3.a);
         rlVertex2f(v3.x, v3.y);
     rlEnd();
 #endif
@@ -1552,7 +1563,7 @@ void DrawTriangleStrip(const Vector2 *points, int pointCount, Color color)
     }
 }
 
-// Draw a regular polygon of n sides (Vector version)
+// Draw a polygon of n sides
 void DrawPoly(Vector2 center, int sides, float radius, float rotation, Color color)
 {
     if (sides < 3) sides = 3;
@@ -2235,7 +2246,7 @@ Vector2 GetSplinePointCatmullRom(Vector2 p1, Vector2 p2, Vector2 p3, Vector2 p4,
 }
 
 // Get spline point for a given t [0.0f .. 1.0f], Quadratic Bezier
-Vector2 GetSplinePointBezierQuad(Vector2 startPos, Vector2 controlPos, Vector2 endPos, float t)
+Vector2 GetSplinePointBezierQuadratic(Vector2 startPos, Vector2 controlPos, Vector2 endPos, float t)
 {
     Vector2 point = { 0 };
 
@@ -2408,8 +2419,11 @@ bool CheckCollisionLines(Vector2 startPos1, Vector2 endPos1, Vector2 startPos2, 
 
         if ((0.0f <= t) && (t <= 1.0f) && (0.0f <= u) && (u <= 1.0f))
         {
-            collisionPoint->x = startPos1.x + t*rx;
-            collisionPoint->y = startPos1.y + t*ry;
+            if (collisionPoint)
+            {
+                collisionPoint->x = startPos1.x + t*rx;
+                collisionPoint->y = startPos1.y + t*ry;
+            }
 
             collision = true;
         }

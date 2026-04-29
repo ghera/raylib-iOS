@@ -580,7 +580,7 @@ Image LoadImageFromTexture(Texture2D texture)
     return image;
 }
 
-// Load image from screen buffer and (screenshot)
+// Load image from screen buffer (screenshot)
 Image LoadImageFromScreen(void)
 {
     Image image = { 0 };
@@ -2795,7 +2795,7 @@ void ImageColorGrayscale(Image *image)
 
 // Modify image color: contrast
 // NOTE: Contrast values between -100 and 100
-void ImageColorContrast(Image *image, float contrast)
+void ImageColorContrast(Image *image, int contrast)
 {
     // Security check to avoid program crash
     if ((image->data == NULL) || (image->width == 0) || (image->height == 0)) return;
@@ -2803,8 +2803,8 @@ void ImageColorContrast(Image *image, float contrast)
     if (contrast < -100) contrast = -100;
     if (contrast > 100) contrast = 100;
 
-    contrast = (100.0f + contrast)/100.0f;
-    contrast *= contrast;
+    float factor = (float)(100.0f + contrast)/100.0f;
+    factor *= factor;
 
     Color *pixels = LoadImageColors(*image);
 
@@ -2812,7 +2812,7 @@ void ImageColorContrast(Image *image, float contrast)
     {
         float pR = (float)pixels[i].r/255.0f;
         pR -= 0.5f;
-        pR *= contrast;
+        pR *= factor;
         pR += 0.5f;
         pR *= 255;
         if (pR < 0) pR = 0;
@@ -2820,7 +2820,7 @@ void ImageColorContrast(Image *image, float contrast)
 
         float pG = (float)pixels[i].g/255.0f;
         pG -= 0.5f;
-        pG *= contrast;
+        pG *= factor;
         pG += 0.5f;
         pG *= 255;
         if (pG < 0) pG = 0;
@@ -2828,7 +2828,7 @@ void ImageColorContrast(Image *image, float contrast)
 
         float pB = (float)pixels[i].b/255.0f;
         pB -= 0.5f;
-        pB *= contrast;
+        pB *= factor;
         pB += 0.5f;
         pB *= 255;
         if (pB < 0) pB = 0;
@@ -3730,7 +3730,14 @@ void ImageDrawRectangleRec(Image *dst, Rectangle rec, Color color)
 }
 
 // Draw rectangle lines within an image
-void ImageDrawRectangleLines(Image *dst, Rectangle rec, int thick, Color color)
+void ImageDrawRectangleLines(Image *dst, int posX, int posY, int width, int height, Color color)
+{
+    Rectangle rec = { posX, posY, width, height };
+    ImageDrawRectangleLinesEx(dst, rec, 1, color);
+}
+
+// Draw rectangle lines within an image with extended parameters
+void ImageDrawRectangleLinesEx(Image *dst, Rectangle rec, int thick, Color color)
 {
     ImageDrawRectangle(dst, (int)rec.x, (int)rec.y, (int)rec.width, thick, color);
     ImageDrawRectangle(dst, (int)rec.x, (int)(rec.y + thick), thick, (int)(rec.height - thick*2), color);
@@ -3806,7 +3813,7 @@ void ImageDrawTriangle(Image *dst, Vector2 v1, Vector2 v2, Vector2 v3, Color col
 }
 
 // Draw triangle with interpolated colors within an image
-void ImageDrawTriangleEx(Image *dst, Vector2 v1, Vector2 v2, Vector2 v3, Color c1, Color c2, Color c3)
+void ImageDrawTriangleGradient(Image *dst, Vector2 v1, Vector2 v2, Vector2 v3, Color c1, Color c2, Color c3)
 {
     // Calculate the 2D bounding box of the triangle
     // Determine the minimum and maximum x and y coordinates of the triangle vertices
@@ -4624,7 +4631,7 @@ void DrawTexturePro(Texture2D texture, Rectangle source, Rectangle dest, Vector2
     }
 }
 
-// Draws a texture (or part of it) that stretches or shrinks nicely using n-patch info
+// Draw a texture (or part of it) that stretches or shrinks nicely using n-patch info
 void DrawTextureNPatch(Texture2D texture, NPatchInfo nPatchInfo, Rectangle dest, Vector2 origin, float rotation, Color tint)
 {
     if (texture.id > 0)

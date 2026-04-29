@@ -1144,7 +1144,7 @@ const char *GetClipboardText(void)
 
     char *clipboard = SDL_GetClipboardText();
 
-    int clipboardSize = snprintf(buffer, sizeof(buffer), "%s", clipboard);
+    int clipboardSize = snprintf(buffer, MAX_CLIPBOARD_BUFFER_LENGTH, "%s", clipboard);
     if (clipboardSize >= MAX_CLIPBOARD_BUFFER_LENGTH)
     {
         char *truncate = buffer + MAX_CLIPBOARD_BUFFER_LENGTH - 4;
@@ -1227,7 +1227,7 @@ void ShowCursor(void)
     CORE.Input.Mouse.cursorHidden = false;
 }
 
-// Hides mouse cursor
+// Hide mouse cursor
 void HideCursor(void)
 {
 #if defined(USING_VERSION_SDL3)
@@ -1238,7 +1238,7 @@ void HideCursor(void)
     CORE.Input.Mouse.cursorHidden = true;
 }
 
-// Enables cursor (unlock cursor)
+// Enable cursor (unlock cursor)
 void EnableCursor(void)
 {
     SDL_SetRelativeMouseMode(SDL_FALSE);
@@ -1247,7 +1247,7 @@ void EnableCursor(void)
     CORE.Input.Mouse.cursorLocked = false;
 }
 
-// Disables cursor (lock cursor)
+// Disable cursor (lock cursor)
 void DisableCursor(void)
 {
     SDL_SetRelativeMouseMode(SDL_TRUE);

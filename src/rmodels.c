@@ -85,7 +85,7 @@
     #define VOX_FREE RL_FREE
 
     #define VOX_LOADER_IMPLEMENTATION
-    #include "external/vox_loader.h"    // VOX file format loading (MagikaVoxel)
+    #include "external/vox_loader.h"    // VOX file format loading (MagicaVoxel)
 #endif
 
 #if SUPPORT_FILEFORMAT_M3D
@@ -724,9 +724,9 @@ void DrawCylinderWires(Vector3 position, float radiusTop, float radiusBottom, fl
 
 // Draw a wired cylinder with base at startPos and top at endPos
 // NOTE: It could be also used for pyramid and cone
-void DrawCylinderWiresEx(Vector3 startPos, Vector3 endPos, float startRadius, float endRadius, int sides, Color color)
+void DrawCylinderWiresEx(Vector3 startPos, Vector3 endPos, float startRadius, float endRadius, int slices, Color color)
 {
-    if (sides < 3) sides = 3;
+    if (slices < 3) slices = 3;
 
     Vector3 direction = { endPos.x - startPos.x, endPos.y - startPos.y, endPos.z - startPos.z };
     if ((direction.x == 0) && (direction.y == 0) && (direction.z == 0)) return; // Security check
@@ -735,12 +735,12 @@ void DrawCylinderWiresEx(Vector3 startPos, Vector3 endPos, float startRadius, fl
     Vector3 b1 = Vector3Normalize(Vector3Perpendicular(direction));
     Vector3 b2 = Vector3Normalize(Vector3CrossProduct(b1, direction));
 
-    float baseAngle = (2.0f*PI)/sides;
+    float baseAngle = (2.0f*PI)/slices;
 
     rlBegin(RL_LINES);
         rlColor4ub(color.r, color.g, color.b, color.a);
 
-        for (int i = 0; i < sides; i++)
+        for (int i = 0; i < slices; i++)
         {
             // Compute the four vertices
             float s1 = sinf(baseAngle*(i + 0))*startRadius;
@@ -769,7 +769,7 @@ void DrawCylinderWiresEx(Vector3 startPos, Vector3 endPos, float startRadius, fl
 }
 
 // Draw a capsule with the center of its sphere caps at startPos and endPos
-void DrawCapsule(Vector3 startPos, Vector3 endPos, float radius, int slices, int rings, Color color)
+void DrawCapsule(Vector3 startPos, Vector3 endPos, float radius, int rings, int slices, Color color)
 {
     if (slices < 3) slices = 3;
 
@@ -908,7 +908,7 @@ void DrawCapsule(Vector3 startPos, Vector3 endPos, float radius, int slices, int
 }
 
 // Draw capsule wires with the center of its sphere caps at startPos and endPos
-void DrawCapsuleWires(Vector3 startPos, Vector3 endPos, float radius, int slices, int rings, Color color)
+void DrawCapsuleWires(Vector3 startPos, Vector3 endPos, float radius, int rings, int slices, Color color)
 {
     if (slices < 3) slices = 3;
 
@@ -3936,7 +3936,7 @@ void DrawModelEx(Model model, Vector3 position, Vector3 rotationAxis, float rota
         Color colDiffuse = mat.maps[MATERIAL_MAP_DIFFUSE].color;
 
         // Applying color tint directly to material diffuse map,
-        // because is comes as an input paramter to the function
+        // because it comes as an input parameter to the function
         Color colTinted = { 0 };
         colTinted.r = (unsigned char)(((int)colDiffuse.r*(int)tint.r)/255);
         colTinted.g = (unsigned char)(((int)colDiffuse.g*(int)tint.g)/255);
