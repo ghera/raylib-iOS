@@ -10,8 +10,7 @@
  *       - No gamepad input support
  *
  *   POSSIBLE IMPROVEMENTS:
- *       - Improvement 01
- *       - Improvement 02
+ *       (none currently identified)
  *
  *   ADDITIONAL NOTES:
  *       - TRACELOG() function is located in raylib [utils] module
@@ -439,10 +438,9 @@ void PollInputEvents(void) {
     // Register previous touch states
     for (int i = 0; i < MAX_TOUCH_POINTS; i++) CORE.Input.Touch.previousTouchState[i] = CORE.Input.Touch.currentTouchState[i];
 
-    // Reset touch positions
-    // TODO: It resets on target platform the mouse position and not filled again until a move-event,
-    // so, if mouse is not moved it returns a (0, 0) position... this behaviour should be reviewed!
-    // for (int i = 0; i < MAX_TOUCH_POINTS; i++) CORE.Input.Touch.position[i] = (Vector2){ 0, 0 };
+    // NOTE: Touch positions NOT reset here on purpose.
+    // On iOS, touch[0] maps to mouse. Resetting to (0,0) would snap mouse to origin
+    // between frames when no touch is active. Last known position persists instead.
 
     // Register previous keys states
     // NOTE: Android supports up to 260 keys
@@ -585,7 +583,8 @@ int InitPlatform(void) {
 
 // Close platform
 void ClosePlatform(void) {
-    // TODO: De-initialize graphics, inputs and more
+    // NOTE: raylib-level cleanup (rlglClose, UnloadFontDefault) is done in CloseWindow()
+    // before calling ClosePlatform(). Here we only tear down EGL resources.
 
     // Close surface, context and display
     if (platform.device != EGL_NO_DISPLAY) {
@@ -673,7 +672,9 @@ static void SyncAllTouches(UIEvent* event) {
         i++;
         if (i >= MAX_TOUCH_POINTS) break;
     }
-    // TODO: Normalize CORE.Input.Touch.position[i] for CORE.Window.screen.width and CORE.Window.screen.height
+    // NOTE: Touch positions from UIKit are in view points, which already match
+    // CORE.Window.screen.width/height on fullscreen. No normalization needed.
+    // The contentScaleFactor is set to nativeScale, so view bounds == screen bounds.
 }
 
 static int IndexOf(int needle, int* haystack, int size) {
