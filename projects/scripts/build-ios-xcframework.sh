@@ -12,7 +12,7 @@
 #   Run from: projects/scripts/ (or adjust RAYLIB_SRC below)
 #
 #   NOTE: ANGLE (libEGL, libGLESv2) NOT bundled. Link separately.
-#   See raylib-iOS/deps/ for ANGLE xcframeworks.
+#   See raylib-iOS/deps/ANGLE/ for ANGLE xcframeworks.
 #
 #   License: zlib/libpng
 #
@@ -49,6 +49,23 @@ build_slice() {
     local minver_flag
     [[ "$sdk" == "iphoneos" ]] && minver_flag="-miphoneos-version-min" || minver_flag="-miphonesimulator-version-min"
 
+    # Map slice_id -> ANGLE variant folder
+    local angle_variant
+    case "$slice_id" in
+        ios-arm64)       angle_variant="ios-arm64" ;;
+        ios-arm64-sim)   angle_variant="ios-arm64_x86_64-simulator" ;;
+        ios-x86_64-sim)  angle_variant="ios-arm64_x86_64-simulator" ;;
+        *)               angle_variant="ios-arm64" ;;
+    esac
+    local angle_gles_hdrs="$PROJECT_ROOT/deps/ANGLE/libGLESv2.xcframework/$angle_variant/libGLESv2.framework/Headers"
+    local angle_egl_hdrs="$PROJECT_ROOT/deps/ANGLE/libEGL.xcframework/$angle_variant/libEGL.framework/Headers"
+
+    # Staging dir with proper naming so #include <libGLESv2/GLES/...> resolves
+    local inc_stage="$outdir/include_staging/$slice_id"
+    mkdir -p "$inc_stage"
+    ln -sfn "$angle_gles_hdrs" "$inc_stage/libGLESv2"
+    ln -sfn "$angle_egl_hdrs" "$inc_stage/libEGL"
+
     local flags=(
         -arch "$arch"
         -std=c17
@@ -59,17 +76,23 @@ build_slice() {
         -DGRAPHICS_API_OPENGL_ES3
         -DGL_GLEXT_PROTOTYPES
         -I"$RAYLIB_SRC"
-        -I"$RAYLIB_SRC/external"
+        -I"$inc_stage"
+        -fmodules
         -O2
         -DNDEBUG
         -Wno-unused-parameter
         -Wno-pointer-sign
         -Wno-int-conversion
+        -include "$angle_gles_hdrs/GLES/gl.h"
     )
 
     for src in "${SOURCES[@]}"; do
         echo "    CC  $src"
-        xcrun clang "${flags[@]}" -c "$RAYLIB_SRC/$src" -o "$objdir/${src%.c}.o"
+        local lang_flag=""
+        # raudio.c: miniaudio.h pulls in AVFoundation (ObjC) on iOS
+        # rcore.c: includes rcore_ios.c which pulls in UIKit (ObjC)
+        [[ "$src" == "raudio.c" || "$src" == "rcore.c" ]] && lang_flag="-x objective-c"
+        xcrun clang "${flags[@]}" $lang_flag -c "$RAYLIB_SRC/$src" -o "$objdir/${src%.c}.o"
     done
 
     local fwdir="$outdir/$slice_id/raylib.framework"
@@ -120,21 +143,29 @@ build_slice iphonesimulator arm64  ios-arm64-sim   "$BUILD_DIR"
 build_slice iphonesimulator x86_64 ios-x86_64-sim  "$BUILD_DIR"
 
 echo ""
+echo "=== Creating fat simulator framework ==="
+SIM_FAT_DIR="$BUILD_DIR/ios-sim-fat/raylib.framework"
+mkdir -p "$SIM_FAT_DIR/Headers"
+
+# Merge simulator binaries into a universal (fat) binary
+xcrun lipo -create \
+    "$BUILD_DIR/ios-arm64-sim/raylib.framework/raylib" \
+    "$BUILD_DIR/ios-x86_64-sim/raylib.framework/raylib" \
+    -output "$SIM_FAT_DIR/raylib"
+
+# Copy headers from either sim slice (identical)
+cp -r "$BUILD_DIR/ios-arm64-sim/raylib.framework/Headers/" "$SIM_FAT_DIR/Headers/"
+cp "$BUILD_DIR/ios-arm64-sim/raylib.framework/Info.plist" "$SIM_FAT_DIR/Info.plist"
+
+echo ""
 echo "=== Creating XCFramework ==="
 rm -rf "$OUTPUT_DIR"
 
 xcodebuild -create-xcframework \
     -framework "$BUILD_DIR/ios-arm64/raylib.framework" \
-    -framework "$BUILD_DIR/ios-arm64-sim/raylib.framework" \
-    -framework "$BUILD_DIR/ios-x86_64-sim/raylib.framework" \
+    -framework "$SIM_FAT_DIR" \
     -output "$OUTPUT_DIR"
 
 echo ""
 echo "=== Done ==="
 echo "  $OUTPUT_DIR"
-echo ""
-echo "To use:"
-echo "  1. Add raylib.xcframework to target → General → Frameworks → Libraries"
-echo "  2. Add deps/libEGL.xcframework + deps/libGLESv2.xcframework"
-echo "  3. #include \"raylib.h\"  — headers inside the xcframework, no extra paths needed"
-echo ""

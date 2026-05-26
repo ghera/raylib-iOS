@@ -68,7 +68,7 @@
 			isa = PBXGroup;
 			children = (
 				1BF3FCFC2BAF2CFD00D3B043 /* main.c */,
-				7EBA69392F0D2AA900831340 /* Dependencies */,
+				7EBA69392F0D2AA900831340 /* ANGLE */,
 				1BF3FCC42BAF1BC900D3B043 /* raylib */,
 				1B16D8F92BAEDBEA001FD5E0 /* Products */,
 				1BF3FCE32BAF1C3000D3B043 /* Frameworks */,
@@ -117,13 +117,14 @@
 			path = bridge;
 			sourceTree = "<group>";
 		};
-		7EBA69392F0D2AA900831340 /* Dependencies */ = {
+		7EBA69392F0D2AA900831340 /* ANGLE */ = {
 			isa = PBXGroup;
 			children = (
 				7EBA69452F0D324100831340 /* libEGL.xcframework */,
 				7EBA69462F0D324100831340 /* libGLESv2.xcframework */,
 			);
-			path = "../../deps";
+			name = ANGLE;
+			path = ../../deps/ANGLE;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
