@@ -530,10 +530,10 @@ A new `raylib` release is finally ready and, again, this is the **biggest `rayli
 
 Some astonishing numbers for this release:
 
- - **+320** closed issues (for a TOTAL of **+2140**!)
- - **+1950** commits since previous RELEASE (for a TOTAL of **+9700**!)
+ - **+330** closed issues (for a TOTAL of **+2150**!)
+ - **+2000** commits since previous RELEASE (for a TOTAL of **+9760**!)
  - **+20** new functions ADDED to raylib API (for a TOTAL of **600**!)
- - **+50** new examples to learn from (for a TOTAL of **+210**!)
+ - **+70** new examples to learn from (for a TOTAL of **+215**!)
  - **+210** new contributors (for a TOTAL of **+850**!)
 
 Highlights for `raylib 6.0`:
@@ -591,14 +591,14 @@ COMMANDS:
     update                        : Validate and update examples collection, generates report
 ```
 
- - **`NEW` +50 new examples**: Thanks to `rexm` and the simplification on examples management, this new raylib release includes +50 new examples to leearn from, most of them contributed by community.
+ - **`NEW` +70 new examples**: Thanks to `rexm` and the simplification on examples management, this new raylib release includes +70 new examples to learn from, most of them contributed by community. Multiple examples have also been renamed for consistency and all examples header and structure have been reviewed and unified. 
 
 Make sure to check raylib [CHANGELOG](https://github.com/raysan5/raylib/blob/master/CHANGELOG) for a detailed list of changes!
 
 I want to **thank all the contributors (+850!**) that along the years have **greatly improved raylib** and pushed it further and better day after day. And **many thanks to raylib community and all raylib users** for supporting the library along those many years.
 
-Finally, I want to thank [puffer.ai](https://puffer.ai/) and [comma.ai](https://comma.ai/) for **supporting and sponsoring the project** as platinum sponsors, along many others individuals that have been sponsoring raylib along the years. Thanks to all of you for allowing me to keep working on this library!
+Finally, I want to thank [puffer.ai](https://puffer.ai/) and [comma.ai](https://comma.ai/) for **using raylib and supporting the project** as platinum sponsors, along many others individuals that have been sponsoring raylib along the years. Thanks to all of you for allowing me to keep working on this library!
 
-**After +12 years of development, `raylib 6.0` is today one of the bests libraries to enjoy games/tools/graphic programming!**
+**After +12 years of development, `raylib 6.0` is today one of the bests libraries to enjoy games/tools/graphics programming!**
 
 **Enjoy graphics programming with raylib!** :)

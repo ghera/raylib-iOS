@@ -4105,7 +4105,7 @@ bool CheckCollisionSpheres(Vector3 center1, float radius1, Vector3 center2, floa
 
     // Check for distances squared to avoid sqrtf()
     float radSum = radius1 + radius2;
-    if (Vector3DistanceSqr(center1, center2) <= radSum*radSum) collision = true;
+    if (Vector3DistanceSqr(center1, center2) <= (radSum*radSum)) collision = true;
 
     return collision;
 }
@@ -4131,18 +4131,13 @@ bool CheckCollisionBoxSphere(BoundingBox box, Vector3 center, float radius)
 {
     bool collision = false;
 
-    float dmin = 0;
+    Vector3 closestPoint = {
+        Clamp(center.x, box.min.x, box.max.x),
+        Clamp(center.y, box.min.y, box.max.y),
+        Clamp(center.z, box.min.z, box.max.z)
+    };
 
-    if (center.x < box.min.x) dmin += powf(center.x - box.min.x, 2);
-    else if (center.x > box.max.x) dmin += powf(center.x - box.max.x, 2);
-
-    if (center.y < box.min.y) dmin += powf(center.y - box.min.y, 2);
-    else if (center.y > box.max.y) dmin += powf(center.y - box.max.y, 2);
-
-    if (center.z < box.min.z) dmin += powf(center.z - box.min.z, 2);
-    else if (center.z > box.max.z) dmin += powf(center.z - box.max.z, 2);
-
-    if (dmin <= (radius*radius)) collision = true;
+    if (Vector3DistanceSqr(center, closestPoint) <= (radius*radius)) collision = true;
 
     return collision;
 }
