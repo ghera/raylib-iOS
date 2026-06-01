@@ -1,0 +1,99 @@
+name: iOS XCFramework Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      upload_to_release:
+        description: Upload the generated zip to an existing GitHub Release
+        required: true
+        default: false
+        type: boolean
+      tag_name:
+        description: Release tag to upload to when upload_to_release is enabled
+        required: false
+        type: string
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ios-xcframework-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build-ios-xcframeworks:
+    name: Build iOS XCFrameworks
+    runs-on: macos-26
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Show toolchain
+        run: |
+          sw_vers
+          xcodebuild -version
+          xcrun --sdk iphoneos --show-sdk-path
+          xcrun --sdk iphonesimulator --show-sdk-path
+
+      - name: Build raylib XCFramework
+        run: |
+          mkdir -p dist
+          bash projects/scripts/build-ios-xcframework.sh "$PWD/dist/raylib.xcframework"
+
+      - name: Verify package inputs
+        run: |
+          test -d dist/raylib.xcframework
+          test -d deps/ANGLE/libEGL.xcframework
+          test -d deps/ANGLE/libGLESv2.xcframework
+          plutil -lint dist/raylib.xcframework/Info.plist
+          plutil -lint deps/ANGLE/libEGL.xcframework/Info.plist
+          plutil -lint deps/ANGLE/libGLESv2.xcframework/Info.plist
+
+      - name: Package XCFrameworks
+        id: package
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag_name || github.ref_name }}
+        run: |
+          safe_tag="$(printf '%s' "$RELEASE_TAG" | tr '/ ' '--')"
+          asset_name="raylib-ios-xcframeworks-${safe_tag}.zip"
+          staging="$RUNNER_TEMP/raylib-ios-xcframeworks"
+
+          rm -rf "$staging"
+          mkdir -p "$staging"
+
+          ditto dist/raylib.xcframework "$staging/raylib.xcframework"
+          ditto deps/ANGLE/libEGL.xcframework "$staging/libEGL.xcframework"
+          ditto deps/ANGLE/libGLESv2.xcframework "$staging/libGLESv2.xcframework"
+
+          cat > "$staging/README.txt" <<EOF
+          raylib iOS XCFramework package
+
+          Contents:
+          - raylib.xcframework
+          - libEGL.xcframework
+          - libGLESv2.xcframework
+
+          ANGLE is packaged from deps/ANGLE and is not rebuilt by this workflow.
+          EOF
+
+          ditto -c -k --sequesterRsrc --keepParent "$staging" "$PWD/$asset_name"
+          echo "asset_name=$asset_name" >> "$GITHUB_OUTPUT"
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: raylib-ios-xcframeworks
+          path: ${{ steps.package.outputs.asset_name }}
+          if-no-files-found: error
+
+      - name: Upload release asset
+        if: ${{ github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && inputs.upload_to_release == true && inputs.tag_name != '') }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ASSET_NAME: ${{ steps.package.outputs.asset_name }}
+          RELEASE_TAG: ${{ github.event_name == 'release' && github.event.release.tag_name || inputs.tag_name }}
+        run: |
+          gh release upload "$RELEASE_TAG" "$ASSET_NAME" --clobber
