@@ -772,7 +772,7 @@ void DrawCylinderWiresEx(Vector3 startPos, Vector3 endPos, float startRadius, fl
 void DrawCapsule(Vector3 startPos, Vector3 endPos, float radius, int rings, int slices, Color color)
 {
     if (slices < 3) slices = 3;
-
+    if (rings  < 1) rings  = 1;
     Vector3 direction = { endPos.x - startPos.x, endPos.y - startPos.y, endPos.z - startPos.z };
 
     // draw a sphere if start and end points are the same
@@ -911,7 +911,7 @@ void DrawCapsule(Vector3 startPos, Vector3 endPos, float radius, int rings, int 
 void DrawCapsuleWires(Vector3 startPos, Vector3 endPos, float radius, int rings, int slices, Color color)
 {
     if (slices < 3) slices = 3;
-
+    if (rings  < 1) rings = 1;
     Vector3 direction = { endPos.x - startPos.x, endPos.y - startPos.y, endPos.z - startPos.z };
 
     // draw a sphere if start and end points are the same
@@ -1167,7 +1167,7 @@ Model LoadModelFromMesh(Mesh mesh)
     return model;
 }
 
-// Check if a model is valid (loaded in GPU, VAO/VBOs)
+// Check if model is valid (loaded in GPU, VAO/VBOs)
 bool IsModelValid(Model model)
 {
     bool result = false;
@@ -1222,6 +1222,8 @@ void UnloadModel(Model model)
     // Unload animation data
     RL_FREE(model.skeleton.bones);
     RL_FREE(model.skeleton.bindPose);
+    RL_FREE(model.currentPose);
+    RL_FREE(model.boneMatrices);
 
     TRACELOG(LOG_INFO, "MODEL: Unloaded model (and meshes) from RAM and VRAM");
 }
@@ -2228,7 +2230,7 @@ Material LoadMaterialDefault(void)
     return material;
 }
 
-// Check if a material is valid (map textures loaded in GPU)
+// Check if material is valid (map textures loaded in GPU)
 bool IsMaterialValid(Material material)
 {
     bool result = false;
@@ -3983,22 +3985,22 @@ void DrawModelWiresEx(Model model, Vector3 position, Vector3 rotationAxis, float
 // Draw a billboard
 void DrawBillboard(Camera camera, Texture2D texture, Vector3 position, float scale, Color tint)
 {
-    Rectangle source = { 0.0f, 0.0f, (float)texture.width, (float)texture.height };
+    Rectangle rec = { 0.0f, 0.0f, (float)texture.width, (float)texture.height };
 
-    DrawBillboardRec(camera, texture, source, position, (Vector2){ scale*fabsf((float)source.width/source.height), scale }, tint);
+    DrawBillboardRec(camera, texture, rec, position, (Vector2){ scale*fabsf((float)rec.width/rec.height), scale }, tint);
 }
 
 // Draw a billboard (part of a texture defined by a rectangle)
-void DrawBillboardRec(Camera camera, Texture2D texture, Rectangle source, Vector3 position, Vector2 size, Color tint)
+void DrawBillboardRec(Camera camera, Texture2D texture, Rectangle rec, Vector3 position, Vector2 size, Color tint)
 {
     // NOTE: Billboard locked on axis-Y
     Vector3 up = { 0.0f, 1.0f, 0.0f };
 
-    DrawBillboardPro(camera, texture, source, position, up, size, Vector2Scale(size, 0.5), 0.0f, tint);
+    DrawBillboardPro(camera, texture, rec, position, up, size, Vector2Scale(size, 0.5), 0.0f, tint);
 }
 
-// Draw a billboard with additional parameters
-void DrawBillboardPro(Camera camera, Texture2D texture, Rectangle source, Vector3 position, Vector3 up, Vector2 size, Vector2 origin, float rotation, Color tint)
+// Draw a billboard texture defined by source rectangle with scaling and rotation
+void DrawBillboardPro(Camera camera, Texture2D texture, Rectangle rec, Vector3 position, Vector3 up, Vector2 size, Vector2 origin, float rotation, Color tint)
 {
     // Compute the up vector and the right vector
     Matrix matView = MatrixLookAt(camera.position, camera.target, camera.up);
@@ -4009,20 +4011,20 @@ void DrawBillboardPro(Camera camera, Texture2D texture, Rectangle source, Vector
     // Flip the content of the billboard while maintaining the counterclockwise edge rendering order
     if (size.x < 0.0f)
     {
-        source.x -= size.x;
-        source.width *= -1.0;
+        rec.x -= size.x;
+        rec.width *= -1.0;
         right = Vector3Negate(right);
         origin.x *= -1.0f;
     }
     if (size.y < 0.0f)
     {
-        source.y -= size.y;
-        source.height *= -1.0;
+        rec.y -= size.y;
+        rec.height *= -1.0;
         up = Vector3Negate(up);
         origin.y *= -1.0f;
     }
 
-    // Draw the texture region described by source on the following rectangle in 3D space:
+    // Draw the texture region described by rec on the following rectangle in 3D space:
     //
     //                size.x          <--.
     //  3 ^---------------------------+ 2 \ rotation
@@ -4054,10 +4056,10 @@ void DrawBillboardPro(Camera camera, Texture2D texture, Rectangle source, Vector
     }
 
     Vector2 texcoords[4];
-    texcoords[0] = (Vector2){ (float)source.x/texture.width, (float)(source.y + source.height)/texture.height };
-    texcoords[1] = (Vector2){ (float)(source.x + source.width)/texture.width, (float)(source.y + source.height)/texture.height };
-    texcoords[2] = (Vector2){ (float)(source.x + source.width)/texture.width, (float)source.y/texture.height };
-    texcoords[3] = (Vector2){ (float)source.x/texture.width, (float)source.y/texture.height };
+    texcoords[0] = (Vector2){ (float)rec.x/texture.width, (float)(rec.y + rec.height)/texture.height };
+    texcoords[1] = (Vector2){ (float)(rec.x + rec.width)/texture.width, (float)(rec.y + rec.height)/texture.height };
+    texcoords[2] = (Vector2){ (float)(rec.x + rec.width)/texture.width, (float)rec.y/texture.height };
+    texcoords[3] = (Vector2){ (float)rec.x/texture.width, (float)rec.y/texture.height };
 
     rlSetTexture(texture.id);
     rlBegin(RL_QUADS);
@@ -6142,17 +6144,36 @@ static Model LoadGLTF(const char *fileName)
 
             for (int i = 0; i < model.skeleton.boneCount; i++)
             {
-                cgltf_node *node = skin.joints[i];
-                cgltf_float worldTransform[16];
-                cgltf_node_transform_world(node, worldTransform);
-                Matrix worldMatrix = {
-                    worldTransform[0], worldTransform[4], worldTransform[8], worldTransform[12],
-                    worldTransform[1], worldTransform[5], worldTransform[9], worldTransform[13],
-                    worldTransform[2], worldTransform[6], worldTransform[10], worldTransform[14],
-                    worldTransform[3], worldTransform[7], worldTransform[11], worldTransform[15]
-                };
+                Matrix bindMatrix = { 0 };
+                cgltf_float inverseBindTransform[16] = { 0 };
 
-                MatrixDecompose(worldMatrix,
+                if ((skin.inverse_bind_matrices != NULL) &&
+                    (skin.inverse_bind_matrices->count >= skin.joints_count) &&
+                    cgltf_accessor_read_float(skin.inverse_bind_matrices, i, inverseBindTransform, 16))
+                {
+                    Matrix inverseBindMatrix = {
+                        inverseBindTransform[0], inverseBindTransform[4], inverseBindTransform[8], inverseBindTransform[12],
+                        inverseBindTransform[1], inverseBindTransform[5], inverseBindTransform[9], inverseBindTransform[13],
+                        inverseBindTransform[2], inverseBindTransform[6], inverseBindTransform[10], inverseBindTransform[14],
+                        inverseBindTransform[3], inverseBindTransform[7], inverseBindTransform[11], inverseBindTransform[15]
+                    };
+                    bindMatrix = MatrixInvert(inverseBindMatrix);
+                }
+                else
+                {
+                    cgltf_float worldTransform[16] = { 0 };
+                    cgltf_node_transform_world(skin.joints[i], worldTransform);
+
+                    Matrix worldMatrix = {
+                        worldTransform[0], worldTransform[4], worldTransform[8], worldTransform[12],
+                        worldTransform[1], worldTransform[5], worldTransform[9], worldTransform[13],
+                        worldTransform[2], worldTransform[6], worldTransform[10], worldTransform[14],
+                        worldTransform[3], worldTransform[7], worldTransform[11], worldTransform[15]
+                    };
+                    bindMatrix = worldMatrix;
+                }
+
+                MatrixDecompose(bindMatrix,
                     &(model.skeleton.bindPose[i].translation),
                     &(model.skeleton.bindPose[i].rotation),
                     &(model.skeleton.bindPose[i].scale));
