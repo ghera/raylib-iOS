@@ -504,14 +504,14 @@ int InitPlatform(void) {
     platform.device = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     if (platform.device == EGL_NO_DISPLAY) {
         TRACELOG(LOG_WARNING, "DISPLAY: Failed to initialize EGL device");
-        return false;
+        return -1;
     }
 
     // Initialize the EGL device connection
     if (eglInitialize(platform.device, NULL, NULL) == EGL_FALSE) {
         // If all of the calls to eglInitialize returned EGL_FALSE then an error has occurred.
         TRACELOG(LOG_WARNING, "DISPLAY: Failed to initialize EGL device");
-        return false;
+        return -1;
     }
 
     // Get an appropriate EGL framebuffer configuration
@@ -524,7 +524,7 @@ int InitPlatform(void) {
     platform.context = eglCreateContext(platform.device, platform.config, EGL_NO_CONTEXT, contextAttribs);
     if (platform.context == EGL_NO_CONTEXT) {
         TRACELOG(LOG_WARNING, "DISPLAY: Failed to create EGL context");
-        return false;
+        return -1;
     }
 
     // Create an EGL window surface
@@ -544,7 +544,7 @@ int InitPlatform(void) {
 
     if (eglMakeCurrent(platform.device, platform.surface, platform.surface, platform.context) == EGL_FALSE) {
         TRACELOG(LOG_WARNING, "DISPLAY: Failed to attach EGL rendering context to EGL surface");
-        return false;
+        return -1;
     } else {
         CGSize screenSize = [[UIScreen mainScreen] bounds].size;
         SetupWindowSizes(screenSize.width, screenSize.height);
@@ -578,7 +578,7 @@ int InitPlatform(void) {
     InitTimer();
     CORE.Storage.basePath = GetWorkingDirectory();
     TRACELOG(LOG_INFO, "PLATFORM: IOS: Initialized successfully");
-    return true;
+    return 0;
 }
 
 // Close platform
