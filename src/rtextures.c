@@ -12,6 +12,7 @@
 *       #define SUPPORT_FILEFORMAT_JPG      0
 *       #define SUPPORT_FILEFORMAT_GIF      1
 *       #define SUPPORT_FILEFORMAT_QOI      1
+*       #define SUPPORT_FILEFORMAT_PEP      1
 *       #define SUPPORT_FILEFORMAT_PSD      0
 *       #define SUPPORT_FILEFORMAT_HDR      0
 *       #define SUPPORT_FILEFORMAT_PIC      0
@@ -188,7 +189,15 @@
     #if defined(_MSC_VER)
         #pragma warning(pop)            // Disable MSVC warning suppression
     #endif
+#endif
 
+#if SUPPORT_FILEFORMAT_PEP
+	#define PEP_MALLOC RL_MALLOC
+	#define PEP_REALLOC RL_REALLOC
+	#define PEP_FREE RL_FREE
+
+    #define PEP_IMPLEMENTATION
+    #include "external/pep.h"
 #endif
 
 #if SUPPORT_IMAGE_EXPORT
@@ -510,6 +519,31 @@ Image LoadImageFromMemory(const char *fileType, const unsigned char *fileData, i
         }
     }
 #endif
+#if SUPPORT_FILEFORMAT_PEP
+    else if ((strcmp(fileType, ".pep") == 0) || (strcmp(fileType, ".PEP") == 0))
+    {
+        if (fileData != NULL)
+        {
+            // Deserialize file data into pep structure
+            pep p = pep_deserialize(fileData, dataSize);
+
+            // Decompress pep data for image struct
+            // Decompression options:
+            //  - First color transparent, 3rd parameter: 1
+            //  - Premultiply alpha on loading, 4th parameter: 1
+            unsigned int *pepData = pep_decompress(&p, pep_rgba, 1, 1);
+
+            image.data = pepData;
+            image.width = p.width;
+            image.height = p.height;
+            image.format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
+            image.mipmaps = 1;
+
+            PEP_FREE(pepData);
+            pep_free(&p);
+        }
+    }
+#endif
 #if SUPPORT_FILEFORMAT_DDS
     else if ((strcmp(fileType, ".dds") == 0) || (strcmp(fileType, ".DDS") == 0))
     {
@@ -681,6 +715,25 @@ bool ExportImage(Image image, const char *fileName)
         }
     }
 #endif
+#if SUPPORT_FILEFORMAT_PEP
+    else if (IsFileExtension(fileName, ".pep"))
+    {
+        if (image.format == PIXELFORMAT_UNCOMPRESSED_R8G8B8A8)
+        {
+            // NOTE: Only RGBA 32bit (8bit per channel) image format supported
+            pep p = pep_compress(image.data, image.width, image.height, pep_rgba, pep_8bit);
+
+            unsigned int pepDataSize = 0;
+            unsigned char *pepData = pep_serialize(&p, &pepDataSize);
+
+            result = SaveFileData(fileName, pepData, pepDataSize);
+
+            PEP_FREE(pepData);
+            pep_free(&p);
+        }
+        else TRACELOG(LOG_WARNING, "IMAGE: Image can not be exported, .pep requires RGBA 32bit input");
+    }
+#endif
 #if SUPPORT_FILEFORMAT_KTX
     else if (IsFileExtension(fileName, ".ktx"))
     {
@@ -760,7 +813,7 @@ bool ExportImageAsCode(Image image, const char *fileName)
 
     // Get file name from path and convert variable name to uppercase
     char varFileName[256] = { 0 };
-    strncpy(varFileName, GetFileNameWithoutExt(fileName), 256 - 1); // NOTE: Using function provided by [rcore] module
+    snprintf(varFileName, 256, "%s", GetFileNameWithoutExt(fileName)); // NOTE: Using function provided by [rcore] module
     for (int i = 0; varFileName[i] != '\0'; i++) if ((varFileName[i] >= 'a') && (varFileName[i] <= 'z')) { varFileName[i] = varFileName[i] - 32; }
 
     // Add image information
@@ -3865,10 +3918,16 @@ void ImageDrawRectangleRec(Image *dst, Rectangle rec, Color color)
     }
 }
 
+// Draw a color-filled rectangle with pro parameters within and image
+void ImageDrawRectanglePro(Image *dst, Rectangle rec, Vector2 origin, float rotation, Color color)
+{
+    // TODO: NEW: Implement ImageDrawRectanglePro()
+}
+
 // Draw rectangle lines within an image
 void ImageDrawRectangleLines(Image *dst, int posX, int posY, int width, int height, Color color)
 {
-    Rectangle rec = { posX, posY, width, height };
+    Rectangle rec = { (float)posX, (float)posY, (float)width, (float)height };
     ImageDrawRectangleLinesEx(dst, rec, 1, color);
 }
 
@@ -3879,6 +3938,12 @@ void ImageDrawRectangleLinesEx(Image *dst, Rectangle rec, int thick, Color color
     ImageDrawRectangle(dst, (int)rec.x, (int)(rec.y + thick), thick, (int)(rec.height - thick*2), color);
     ImageDrawRectangle(dst, (int)(rec.x + rec.width - thick), (int)(rec.y + thick), thick, (int)(rec.height - thick*2), color);
     ImageDrawRectangle(dst, (int)rec.x, (int)(rec.y + rec.height - thick), (int)rec.width, thick, color);
+}
+
+// Draw rectangle with gradient colors within an image, counter-clockwise color order
+void ImageDrawRectangleGradientEx(Image *dst, Rectangle rec, Color col1, Color col2, Color col3, Color col4)
+{
+    // TODO: NEW: Implement ImageDrawRectangleGradientEx()
 }
 
 // Draw circle within an image
@@ -3948,15 +4013,21 @@ void ImageDrawCircleLinesV(Image *dst, Vector2 center, int radius, Color color)
 // Draw a gradient-filled circle within an image
 void ImageDrawCircleGradient(Image *dst, Vector2 center, float radius, Color inner, Color outer)
 {
-    // TODO: Implement gradient circle drawing
+    // TODO: NEW: Implement ImageDrawCircleGradient()
 }
 
 // Draw an image within an image
 void ImageDrawImage(Image *dst, Image src, int posX, int posY, Color tint)
 {
-    Rectangle srcRec = { 0, 0, src.width, src.height };
-    Rectangle dstRec = { posX, posY, srcRec.width, srcRec.height };
+    Rectangle srcRec = { 0.0f, 0.0f, (float)src.width, (float)src.height };
+    Rectangle dstRec = { (float)posX, (float)posY, srcRec.width, srcRec.height };
     ImageDrawImagePro(dst, src, srcRec, dstRec, (Vector2){ 0 }, 0.0f, tint);
+}
+
+// Draw an image with scaling and rotation within an image
+void ImageDrawImageEx(Image *dst, Image src, Vector2 position, float rotation, float scale, Color tint)
+{
+    // TODO: NEW: Implement ImageDrawImageEx()
 }
 
 // Draw a part of an image defined by a rectangle within an image
@@ -3967,8 +4038,7 @@ void ImageDrawImageRec(Image *dst, Image src, Rectangle srcRec, Vector2 position
 }
 
 // Draw a part of an image defined by a rectangle into destination rectangle, with scaling and rotation, within an image
-// NOTE: Color tint is applied to source image
-// TODO: WARNING: origin and rotation are not implemented
+// TODO: REVIEW: ImageDrawImagePro(), implement origin and rotation for image drawing
 void ImageDrawImagePro(Image *dst, Image src, Rectangle srcRec, Rectangle dstRec, Vector2 origin, float rotation, Color tint)
 {
     // Security check to avoid program crash
@@ -4144,6 +4214,12 @@ void ImageDrawTextEx(Image *dst, Font font, const char *text, Vector2 position, 
     ImageDrawImagePro(dst, imText, srcRec, dstRec, (Vector2){ 0 }, 0.0f, WHITE);
 
     UnloadImage(imText);
+}
+
+// Draw text using Font and pro parameters (rotation)
+void ImageDrawTextPro(Image *dst, Font font, const char *text, Vector2 position, Vector2 origin, float rotation, float fontSize, float spacing, Color tint)
+{
+    // TODO: NEW: Implement ImageDrawTextPro()
 }
 
 //------------------------------------------------------------------------------------

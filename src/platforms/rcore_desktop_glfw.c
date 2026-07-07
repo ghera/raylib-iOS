@@ -151,7 +151,7 @@ static void CharCallback(GLFWwindow *window, unsigned int codepoint);           
 static void MouseButtonCallback(GLFWwindow *window, int button, int action, int mods);  // GLFW3 Mouse Button Callback, runs on mouse button pressed
 static void MouseCursorPosCallback(GLFWwindow *window, double x, double y);             // GLFW3 Cursor Position Callback, runs on mouse move
 static void MouseScrollCallback(GLFWwindow *window, double xoffset, double yoffset);    // GLFW3 Scrolling Callback, runs on mouse wheel
-static void CursorEnterCallback(GLFWwindow *window, int enter);                         // GLFW3 Cursor Enter Callback, cursor enters client area
+static void CursorEnterCallback(GLFWwindow *window, int entered);                       // GLFW3 Cursor Enter Callback, cursor enters client area
 static void JoystickCallback(int jid, int event);                                       // GLFW3 Joystick Connected/Disconnected Callback
 
 // Memory allocator wrappers [used by glfwInitAllocator()]
@@ -1181,17 +1181,25 @@ double GetTime(void)
 }
 
 // Open URL with default system browser (if available)
-// NOTE: This function is only safe to use if you control the URL given
-// A user could craft a malicious string performing another action
-// Only call this function yourself not with user input or make sure to check the string yourself
-// REF: https://github.com/raysan5/raylib/issues/686
+// WARNING: This function is only safe to use if you control the URL given,
+// a user could craft a malicious string to perform and undesired action
+// NOTE: Some safety checks have been added to mitigate security issues
 void OpenURL(const char *url)
 {
     // Security check to (partially) avoid malicious code
-    if (strchr(url, '\'') != NULL) TRACELOG(LOG_WARNING, "SYSTEM: Provided URL could be potentially malicious, avoid [\'] character");
-    else
+    if ((strchr(url, '\'') != NULL) || (strchr(url, '\"') != NULL))
     {
-        char *cmd = (char *)RL_CALLOC(strlen(url) + 32, sizeof(char));
+        // Filter characters: ' and "
+        TRACELOG(LOG_WARNING, "SYSTEM: Provided URL could be potentially malicious, avoid [\'\"] characters");
+    }
+    else if ((strncmp(url, "http://", 7) != 0) && (strncmp(url, "https://", 8) != 0))
+    {
+        // Only allow URL starting with "http://" or "https://" protocols
+        TRACELOG(LOG_WARNING, "SYSTEM: Provided URL must start with 'http://' or 'https://' protocols");
+    }
+    else
+    {       
+        char *cmd = (char *)RL_CALLOC(strlen(url) + 16, sizeof(char));
 #if defined(_WIN32)
         sprintf(cmd, "explorer \"%s\"", url);
 #endif
@@ -1201,7 +1209,9 @@ void OpenURL(const char *url)
 #if defined(__APPLE__)
         sprintf(cmd, "open '%s'", url);
 #endif
+        // TODO: Replace system() call by custom process
         int result = system(cmd);
+        
         if (result == -1) TRACELOG(LOG_WARNING, "OpenURL() child process could not be created");
         RL_FREE(cmd);
     }
@@ -1829,7 +1839,7 @@ int InitPlatform(void)
         {
           CORE.Input.Gamepad.ready[i] = true;
           CORE.Input.Gamepad.axisCount[i] = GLFW_GAMEPAD_AXIS_LAST + 1;
-          strncpy(CORE.Input.Gamepad.name[i], glfwGetJoystickName(i), MAX_GAMEPAD_NAME_LENGTH - 1);
+          snprintf(CORE.Input.Gamepad.name[i], MAX_GAMEPAD_NAME_LENGTH, "%s", glfwGetJoystickName(i));
         }
     }
     //----------------------------------------------------------------------------
@@ -2044,7 +2054,7 @@ static void WindowDropCallback(GLFWwindow *window, int count, const char **paths
         for (unsigned int i = 0; i < CORE.Window.dropFileCount; i++)
         {
             CORE.Window.dropFilepaths[i] = (char *)RL_CALLOC(MAX_FILEPATH_LENGTH, sizeof(char));
-            strncpy(CORE.Window.dropFilepaths[i], paths[i], MAX_FILEPATH_LENGTH - 1);
+            snprintf(CORE.Window.dropFilepaths[i], MAX_FILEPATH_LENGTH, "%s", paths[i]);
         }
     }
 }
@@ -2167,10 +2177,18 @@ static void MouseScrollCallback(GLFWwindow *window, double xoffset, double yoffs
 }
 
 // GLFW3: Cursor ennter callback, when cursor enters the window
-static void CursorEnterCallback(GLFWwindow *window, int enter)
+static void CursorEnterCallback(GLFWwindow *window, int entered)
 {
-    if (enter) CORE.Input.Mouse.cursorOnScreen = true;
-    else CORE.Input.Mouse.cursorOnScreen = false;
+    if (entered) 
+    {
+        // NOTE: Mouse position updated by MouseCursorPosCallback()
+        CORE.Input.Mouse.cursorOnScreen = true;
+    }
+    else 
+    {
+        CORE.Input.Mouse.cursorOnScreen = false;
+        CORE.Input.Mouse.currentPosition = (Vector2){ 0 };
+    }
 }
 
 // GLFW3: Joystick connected/disconnected callback
@@ -2183,7 +2201,7 @@ static void JoystickCallback(int jid, int event)
             // WARNING: If glfwGetJoystickName() is longer than MAX_GAMEPAD_NAME_LENGTH,
             // only copy up to (MAX_GAMEPAD_NAME_LENGTH -1) to destination string
             memset(CORE.Input.Gamepad.name[jid], 0, MAX_GAMEPAD_NAME_LENGTH);
-            strncpy(CORE.Input.Gamepad.name[jid], glfwGetJoystickName(jid), MAX_GAMEPAD_NAME_LENGTH - 1);
+            snprintf(CORE.Input.Gamepad.name[jid], MAX_GAMEPAD_NAME_LENGTH, "%s", glfwGetJoystickName(jid));
         }
         else if (event == GLFW_DISCONNECTED)
         {
