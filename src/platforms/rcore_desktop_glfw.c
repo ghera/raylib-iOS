@@ -1237,7 +1237,6 @@ void SetGamepadVibration(int gamepad, float leftMotor, float rightMotor, float d
 void SetMousePosition(int x, int y)
 {
     CORE.Input.Mouse.currentPosition = (Vector2){ (float)x, (float)y };
-    CORE.Input.Mouse.previousPosition = CORE.Input.Mouse.currentPosition;
 
     // NOTE: emscripten not implemented
     glfwSetCursorPos(platform.handle, CORE.Input.Mouse.currentPosition.x, CORE.Input.Mouse.currentPosition.y);
@@ -1326,7 +1325,7 @@ void PollInputEvents(void)
             // Register previous gamepad states
             for (int k = 0; k < MAX_GAMEPAD_BUTTONS; k++) CORE.Input.Gamepad.previousButtonState[i][k] = CORE.Input.Gamepad.currentButtonState[i][k];
 
-            // Get current gamepad state
+            // Get current gamepad state using internal GLFW mapping, instead of the immediate joystick API
             // NOTE: There is no callback available, getting it manually
             GLFWgamepadstate state = { 0 };
             int result = glfwGetGamepadState(i, &state); // This remaps all gamepads so they have their buttons mapped like an xbox controller
@@ -1341,7 +1340,7 @@ void PollInputEvents(void)
 
             for (int k = 0; (buttons != NULL) && (k < MAX_GAMEPAD_BUTTONS); k++)
             {
-                int button = -1;        // GamepadButton enum values assigned
+                int button = -1; // GamepadButton enum values assigned
 
                 switch (k)
                 {
@@ -1367,7 +1366,7 @@ void PollInputEvents(void)
                     default: break;
                 }
 
-                if (button != -1)   // Check for valid button
+                if (button != -1) // Check for valid button
                 {
                     if (buttons[k] == GLFW_PRESS)
                     {
@@ -1409,10 +1408,10 @@ void PollInputEvents(void)
     if ((CORE.Window.eventWaiting) ||
         (FLAG_IS_SET(CORE.Window.flags, FLAG_WINDOW_MINIMIZED) && !FLAG_IS_SET(CORE.Window.flags, FLAG_WINDOW_ALWAYS_RUN)))
     {
-        glfwWaitEvents();     // Wait for in input events before continue (drawing is paused)
+        glfwWaitEvents(); // Wait for in input events before continue (drawing is paused)
         CORE.Time.previous = GetTime();
     }
-    else glfwPollEvents();      // Poll input events: keyboard/mouse/window events (callbacks) -> Update keys state
+    else glfwPollEvents(); // Poll input events: keyboard/mouse/window events (callbacks) -> Update keys state
 
     CORE.Window.shouldClose = glfwWindowShouldClose(platform.handle);
 
@@ -1692,6 +1691,14 @@ int InitPlatform(void)
             TRACELOG(LOG_WARNING, "GLFW: Failed to determine Monitor to center Window");
             return -1;
         }
+
+#if defined(__APPLE__)
+        // AppKit can constrain the requested window size to the visible work area during creation
+        int windowWidth = 0;
+        int windowHeight = 0;
+        glfwGetWindowSize(platform.handle, &windowWidth, &windowHeight);
+        if ((windowWidth > 0) && (windowHeight > 0)) CORE.Window.screen = (Size){ windowWidth, windowHeight };
+#endif
 
         // NOTE: Not considering scale factor now, considered below
         CORE.Window.render.width = CORE.Window.screen.width;

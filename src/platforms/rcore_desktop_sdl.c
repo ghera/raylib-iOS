@@ -1255,12 +1255,14 @@ Image GetClipboardImage(void)
 
     for (int i = 0; i < SDL_arraysize(imageFormats); i++)
     {
-        // NOTE: This pointer should be free with SDL_free() at some point
         fileData = SDL_GetClipboardData(imageFormats[i], &dataSize);
 
         if (fileData)
         {
             image = LoadImageFromMemory(imageExtensions[i], fileData, (int)dataSize);
+
+            SDL_free(fileData);
+
             if (IsImageValid(image))
             {
                 TRACELOG(LOG_INFO, "Clipboard: Got image from clipboard successfully: %s", imageExtensions[i]);
@@ -1409,7 +1411,6 @@ void SetMousePosition(int x, int y)
     SDL_WarpMouseInWindow(platform.window, x, y);
 
     CORE.Input.Mouse.currentPosition = (Vector2){ (float)x, (float)y };
-    CORE.Input.Mouse.previousPosition = CORE.Input.Mouse.currentPosition;
 }
 
 // Set mouse cursor

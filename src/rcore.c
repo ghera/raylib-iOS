@@ -1808,7 +1808,6 @@ void UnloadRandomSequence(int *sequence)
 }
 
 // Takes a screenshot of current screen
-// NOTE: Provided fileName should not contain paths, saving to working directory
 void TakeScreenshot(const char *fileName)
 {
 #if SUPPORT_MODULE_RTEXTURES
@@ -1823,7 +1822,8 @@ void TakeScreenshot(const char *fileName)
     Image image = { imgData, (int)((float)CORE.Window.render.width*scale.x), (int)((float)CORE.Window.render.height*scale.y), 1, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8 };
 
     char path[MAX_FILEPATH_LENGTH] = { 0 };
-    snprintf(path, MAX_FILEPATH_LENGTH, "%s", TextFormat("%s/%s", CORE.Storage.basePath, fileName));
+    if (!IsPathAbsolute(fileName)) snprintf(path, MAX_FILEPATH_LENGTH, "%s", TextFormat("%s/%s", CORE.Storage.basePath, fileName));
+    else snprintf(path, MAX_FILEPATH_LENGTH, "%s", fileName);
 
     ExportImage(image, path); // WARNING: Module required: rtextures
     RL_FREE(imgData);
@@ -2526,7 +2526,7 @@ const char *GetFileNameWithoutExt(const char *filePath)
     return fileName;
 }
 
-// Get directory for a given filePath
+// Get directory for a provided filePath
 const char *GetDirectoryPath(const char *filePath)
 {
     /*
@@ -2573,7 +2573,7 @@ const char *GetDirectoryPath(const char *filePath)
     return dirPath;
 }
 
-// Get previous directory path for a given path
+// Get previous directory path for a provided path
 const char *GetPrevDirectoryPath(const char *dirPath)
 {
     static char prevDirPath[MAX_FILEPATH_LENGTH] = { 0 };
@@ -2823,7 +2823,7 @@ int ChangeDirectory(const char *dirPath)
     return result;
 }
 
-// Check if given path point to a file
+// Check if provided path point to a file
 bool IsPathFile(const char *path)
 {
     bool result = false;
@@ -2836,12 +2836,34 @@ bool IsPathFile(const char *path)
     return result;
 }
 
-// Check if given path point to a directory
+// Check if provided path point to a directory
 bool IsPathDirectory(const char *path)
 {
     bool result = false;
 
     if (!IsPathFile(path)) result = true;
+
+    return result;
+}
+
+// Check if provided path is an absolute path
+bool IsPathAbsolute(const char *path)
+{
+    int result = false;
+    
+    if ((path != NULL) && (path[0] != '\0'))
+    {
+#if defined(_WIN32)
+        // UNC path (\\server\share)
+        if ((path[0] == '\\') && (path[1] == '\\')) result = true;
+        // Drive letter (e.g. C:\ or D:/)
+        else if (isalpha((unsigned char)path[0]) && (path[1] == ':') &&
+            ((path[2] == '\\') || (path[2] == '/'))) result = true;
+#else
+        // POSIX: must start with /
+        if (path[0] == '/') result = true;
+#endif
+    }
 
     return result;
 }
@@ -3277,7 +3299,7 @@ unsigned int *ComputeMD5(const unsigned char *data, int dataSize)
     memcpy(msg + newDataSize, &bitsLen, 4); // Append the len in bits at the end of the buffer
 
     // Process the message in successive 512-bit chunks for each 512-bit chunk of message
-    for (int offset = 0; offset < newDataSize; offset += (512/8))
+    for (int offset = 0; offset < newDataSize; offset += 64)  // 512/8
     {
         // Break chunk into sixteen 32-bit words w[j], 0 <= j <= 15
         unsigned int *w = (unsigned int *)(msg + offset);
@@ -3374,7 +3396,7 @@ unsigned int *ComputeSHA1(const unsigned char *data, int dataSize)
     msg[newDataSize - 8] = (unsigned char)(bitsLen >> 56);
 
     // Process the message in successive 512-bit chunks
-    for (int offset = 0; offset < newDataSize; offset += (512/8))
+    for (int offset = 0; offset < newDataSize; offset += 64)  // 512/8
     {
         // Break chunk into sixteen 32-bit words w[j], 0 <= j <= 15
         unsigned int w[80] = { 0 };
@@ -3605,10 +3627,14 @@ AutomationEventList LoadAutomationEventList(const char *fileName)
                     case 'c': sscanf(buffer, "c %i", &list.count); break;
                     case 'e':
                     {
-                        sscanf(buffer, "e %d %d %d %d %d %d %[^\n]s", &list.events[counter].frame, &list.events[counter].type,
-                               &list.events[counter].params[0], &list.events[counter].params[1], &list.events[counter].params[2], &list.events[counter].params[3], eventDesc);
+                        if (counter < list.capacity)
+                        {
+                            sscanf(buffer, "e %d %d %d %d %d %d %63[^\n]s", &list.events[counter].frame, &list.events[counter].type,
+                                   &list.events[counter].params[0], &list.events[counter].params[1], &list.events[counter].params[2], &list.events[counter].params[3], eventDesc);
 
-                        counter++;
+                            counter++;
+                        }
+                        else TRACELOG(LOG_WARNING, "AUTOMATION: Event goes beyond automated list capacity (MAX: %u): %s", list.capacity, buffer);
                     } break;
                     default: break;
                 }
@@ -4214,7 +4240,7 @@ Vector2 GetTouchPosition(int index)
     return position;
 }
 
-// Get touch point identifier for given index
+// Get touch point identifier for provided index
 int GetTouchPointId(int index)
 {
     int id = -1;
