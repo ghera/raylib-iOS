@@ -2397,7 +2397,7 @@ void rlglClose(void)
 // NOTE: External loader function must be provided
 void rlLoadExtensions(void *loader)
 {
-#if defined(GRAPHICS_API_OPENGL_33)     // Also defined for GRAPHICS_API_OPENGL_21
+#if defined(GRAPHICS_API_OPENGL_33) // Also defined for GRAPHICS_API_OPENGL_21
     // NOTE: glad is generated and contains only required OpenGL 3.3 Core extensions (and lower versions)
     if (gladLoadGL((GLADloadfunc)loader) == 0) TRACELOG(RL_LOG_WARNING, "GLAD: Cannot load OpenGL extensions");
     else TRACELOG(RL_LOG_INFO, "GLAD: OpenGL extensions loaded successfully");
@@ -2528,7 +2528,7 @@ void rlLoadExtensions(void *loader)
         }
 
         // Check instanced rendering support
-        if (strstr(extList[i], (const char *)"instanced_arrays") != NULL)   // Broad check for instanced_arrays
+        if (strstr(extList[i], (const char *)"instanced_arrays") != NULL) // Broad check for instanced_arrays
         {
             // Specific check
             if (strcmp(extList[i], (const char *)"GL_ANGLE_instanced_arrays") == 0)      // ANGLE
@@ -3775,7 +3775,7 @@ void *rlReadTexturePixels(unsigned int id, int width, int height, int format)
     glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 #else
     // Reading data as original texture format, in some platforms (RPI, Wasm) it works
-    pixels = (unsigned char *)RL_MALLOC(GetPixelDataSize(width, height, format));
+    pixels = (unsigned char *)RL_MALLOC(rlGetPixelDataSize(width, height, format));
     unsigned int glInternalFormat = 0, glFormat = 0, glType = 0;
     rlGetGlTextureFormats(format, &glInternalFormat, &glFormat, &glType);
     glReadPixels(0, 0, width, height, glFormat, glType, pixels);
@@ -3813,7 +3813,7 @@ unsigned char *rlReadScreenPixels(int width, int height)
 {
     unsigned char *imgData = (unsigned char *)RL_CALLOC(width*height*4, sizeof(unsigned char));
 
-    // NOTE: Buffer retrieved is GL_FRONT in single-buffered configurations 
+    // NOTE: Buffer retrieved is GL_FRONT in single-buffered configurations
     // and GL_BACK in double-buffered configurations, make sure to call it at the end of frame
     //glReadBuffer(GL_BACK);
 
@@ -5279,7 +5279,7 @@ static int rlGetPixelDataSize(int width, int height, int format)
             int blockHeight = (height + 3)/4;
             unsigned long long dataSizeBytes = (unsigned long long)blockWidth*blockHeight*8;
             if (dataSizeBytes < INT_MAX) dataSize = (int)dataSizeBytes;
-            
+
         } break;
         case RL_PIXELFORMAT_COMPRESSED_DXT3_RGBA:
         case RL_PIXELFORMAT_COMPRESSED_DXT5_RGBA:
@@ -5290,7 +5290,7 @@ static int rlGetPixelDataSize(int width, int height, int format)
             int blockHeight = (height + 3)/4;
             unsigned long long dataSizeBytes = (unsigned long long)blockWidth*blockHeight*16;
             if (dataSizeBytes < INT_MAX) dataSize = (int)dataSizeBytes;
-            
+
         } break;
         case RL_PIXELFORMAT_COMPRESSED_ASTC_8x8_RGBA: // 4 bytes per each 4x4 block
         {
@@ -5298,7 +5298,7 @@ static int rlGetPixelDataSize(int width, int height, int format)
             int blockHeight = (height + 3)/4;
             unsigned long long dataSizeBytes = (unsigned long long)blockWidth*blockHeight*4;
             if (dataSizeBytes < INT_MAX) dataSize = (int)dataSizeBytes;
-            
+
         } break;
         default: break;
     }
@@ -5310,7 +5310,7 @@ static int rlGetPixelDataSize(int width, int height, int format)
         unsigned long long dataSizeBytes = ((unsigned long long)width*height*bpp) >> 3;  // Get size in bytes (dividing by 8)
         if (dataSizeBytes < INT_MAX) dataSize = (int)dataSizeBytes;
     }
-    
+
     if (dataSize == 0) TRACELOG(LOG_WARNING, "Requested image size is larger than 2GB, it can not be allocated");
 
     return dataSize;

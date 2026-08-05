@@ -633,32 +633,64 @@ void DrawRectangleLines(int posX, int posY, int width, int height, Color color)
 // Draw rectangle outline with line thickness
 void DrawRectangleLinesEx(Rectangle rec, float thick, Color color)
 {
-    if ((thick > rec.width) || (thick > rec.height))
+    if ((thick > rec.width/2) || (thick > rec.height/2))
     {
         if (rec.width >= rec.height) thick = rec.height/2;
         else if (rec.width <= rec.height) thick = rec.width/2;
     }
 
-    // When rec = { x, y, 8.0f, 6.0f } and thick = 2, the following
-    // four rectangles are drawn ([T]op, [B]ottom, [L]eft, [R]ight):
-    //
-    //   TTTTTTTT
-    //   TTTTTTTT
-    //   LL    RR
-    //   LL    RR
-    //   BBBBBBBB
-    //   BBBBBBBB
-    //
+    if (thick > 0.0f)
+    {
+        // When rec = { x, y, 8.0f, 6.0f } and thick = 2, the following
+        // four rectangles are drawn ([T]op, [B]ottom, [L]eft, [R]ight):
+        //
+        //   TTTTTTTT
+        //   TTTTTTTT
+        //   LL    RR
+        //   LL    RR
+        //   BBBBBBBB
+        //   BBBBBBBB
+        //
 
-    Rectangle top = { rec.x, rec.y, rec.width, thick };
-    Rectangle bottom = { rec.x, rec.y - thick + rec.height, rec.width, thick };
-    Rectangle left = { rec.x, rec.y + thick, thick, rec.height - thick*2.0f };
-    Rectangle right = { rec.x - thick + rec.width, rec.y + thick, thick, rec.height - thick*2.0f };
+        Rectangle top = { rec.x, rec.y, rec.width, thick };
+        Rectangle bottom = { rec.x, rec.y - thick + rec.height, rec.width, thick };
+        Rectangle left = { rec.x, rec.y + thick, thick, rec.height - thick*2.0f };
+        Rectangle right = { rec.x - thick + rec.width, rec.y + thick, thick, rec.height - thick*2.0f };
 
-    DrawRectangleRec(top, color);
-    DrawRectangleRec(bottom, color);
-    DrawRectangleRec(left, color);
-    DrawRectangleRec(right, color);
+        DrawRectangleRec(top, color);
+        DrawRectangleRec(bottom, color);
+        DrawRectangleRec(left, color);
+        DrawRectangleRec(right, color);
+    }
+    else
+    {
+        // When rec = { x, y, 8.0f, 6.0f } and thick = -2, the following
+        // four rectangles are drawn ([T]op, [B]ottom, [L]eft, [R]ight):
+        //
+        //   TTTTTTTTTTTT
+        //   TTTTTTTTTTTT
+        //   LL        RR
+        //   LL        RR
+        //   LL        RR
+        //   LL        RR
+        //   LL        RR
+        //   LL        RR
+        //   BBBBBBBBBBBB
+        //   BBBBBBBBBBBB
+        //
+
+        thick *= -1.0f;
+
+        Rectangle top = { rec.x - thick, rec.y - thick, rec.width + thick*2.0f, thick };
+        Rectangle bottom = { rec.x - thick, rec.y + rec.height, rec.width + thick*2.0f, thick};
+        Rectangle left = { rec.x - thick, rec.y, thick, rec.height };
+        Rectangle right = { rec.x + rec.width, rec.y, thick, rec.height };
+
+        DrawRectangleRec(top, color);
+        DrawRectangleRec(bottom, color);
+        DrawRectangleRec(left, color);
+        DrawRectangleRec(right, color);
+    }
 }
 
 // Draw rectangle with rounded edges
@@ -893,18 +925,10 @@ void DrawRectangleRounded(Rectangle rec, float roundness, int segments, Color co
 // Draw rectangle with rounded edges
 void DrawRectangleRoundedLines(Rectangle rec, float roundness, int segments, Color color)
 {
-    DrawRectangleRoundedLinesEx(rec, roundness, segments, 1.0f, color);
-}
-
-// Draw rectangle with rounded edges outline with line thickness
-void DrawRectangleRoundedLinesEx(Rectangle rec, float roundness, int segments, float thick, Color color)
-{
-    if (thick <= 0) return;
-
     // Not a rounded rectangle
     if (roundness <= 0.0f)
     {
-        DrawRectangleLinesEx((Rectangle){rec.x - thick, rec.y - thick, rec.width + 2*thick, rec.height + 2*thick}, thick, color);
+        DrawRectangleLines((int)rec.x, (int)rec.y, (int)rec.width, (int)rec.height, color);
         return;
     }
 
@@ -927,7 +951,160 @@ void DrawRectangleRoundedLinesEx(Rectangle rec, float roundness, int segments, f
     }
 
     float stepLength = 90.0f/(float)segments;
-    const float outerRadius = radius + thick, innerRadius = radius;
+
+    /*
+    Quick sketch to make sense of all of this,
+    marks the 8 + 4 (corner centers P8-11) points used
+
+           P0 ------------------ P1
+          /                        \
+         /                          \
+     P7 /                            \ P2
+       |    *P8               P9*     |
+       |                              |
+       |                              |
+     P6 \   *P11             P10*    / P3
+         \                          /
+          \                        /
+           P5 ------------------ P4
+    */
+
+    // The x-coordinates used for the outline
+    const float x0 = rec.x + radius + 0.5f;
+    const float x1 = (rec.x + rec.width) - radius - 0.5f;
+    const float x2 = rec.x + rec.width - 0.5f;
+    const float x3 = rec.x + 0.5f;
+
+    // The y-coordinates used for the outline
+    const float y0 = rec.y + 0.5f;
+    const float y1 = rec.y + radius + 0.5f;
+    const float y2 = (rec.y + rec.height) - radius - 0.5f;
+    const float y3 = rec.y + rec.height - 0.5f;
+
+    const Vector2 point[8] = {
+        {x0, y0}, // P0
+        {x1, y0}, // P1
+        {x2, y1}, // P2
+        {x2, y2}, // P3
+        {x1, y3}, // P4
+        {x0, y3}, // P5
+        {x3, y2}, // P6
+        {x3, y1}, // P7
+    };
+
+    const Vector2 centers[4] = {
+        {x0, y1}, // P16
+        {x1, y1}, // P17
+        {x1, y2}, // P18
+        {x0, y2}  // P19
+    };
+
+    const float angles[4] = { 180.0f, 270.0f, 0.0f, 90.0f };
+
+    rlBegin(RL_LINES);
+        // Draw all the 4 corners first: Upper Left Corner, Upper Right Corner, Lower Right Corner, Lower Left Corner
+        for (int k = 0; k < 4; ++k) // Hope the compiler is smart enough to unroll this loop
+        {
+            float angle = angles[k];
+            const Vector2 center = centers[k];
+
+            for (int i = 0; i < segments; i++)
+            {
+                rlColor4ub(color.r, color.g, color.b, color.a);
+                rlVertex2f(center.x + cosf(DEG2RAD*angle)*radius, center.y + sinf(DEG2RAD*angle)*radius);
+                rlVertex2f(center.x + cosf(DEG2RAD*(angle + stepLength))*radius, center.y + sinf(DEG2RAD*(angle + stepLength))*radius);
+                angle += stepLength;
+            }
+        }
+
+        // And now the remaining 4 lines
+        for (int i = 0; i < 8; i += 2)
+        {
+            rlColor4ub(color.r, color.g, color.b, color.a);
+            rlVertex2f(point[i].x, point[i].y);
+            rlVertex2f(point[i + 1].x, point[i + 1].y);
+        }
+    rlEnd();
+}
+
+// Draw rectangle with rounded edges outline with line thickness
+void DrawRectangleRoundedLinesEx(Rectangle rec, float roundness, int segments, float thick, Color color)
+{
+    // Not a rounded rectangle
+    if (roundness <= 0.0f)
+    {
+        DrawRectangleLinesEx(rec, thick, color);
+        return;
+    }
+
+    if (roundness >= 1.0f) roundness = 1.0f;
+
+    float radius = 0.0f;
+    float roundedOutlineThick = 0.0f;
+    float outerRadius = 0.0f;
+    float innerRadius = 0.0f;
+    if (thick >= 0.0f)
+    {
+        // Calculate corner radius
+        radius = (rec.width > rec.height)? (rec.height*roundness)/2 : (rec.width*roundness)/2;
+        if (radius <= 0.0f) return;
+
+        outerRadius = radius;
+        innerRadius = outerRadius - thick;
+
+        // The maximum thickness the outline can have and still be rounded on the interior edge is equal to the corner radius
+        // Put another way, when `innerRadius <= 0`, the interior of the outline is just a normal rectangle with no rounding
+        if (innerRadius <= 0.0f)
+        {
+            innerRadius = 0.0f;
+            roundedOutlineThick = outerRadius;
+
+            // Draw the not-rounded portion of the outline
+            DrawRectangleLinesEx((Rectangle){ rec.x + outerRadius, rec.y + outerRadius, rec.width - outerRadius*2.0f, rec.height - outerRadius*2.0f }, thick - outerRadius, color);
+        }
+        else
+        {
+            roundedOutlineThick = thick;
+        }
+
+        // Calculate number of segments to use for the corners
+        if (segments < 4)
+        {
+            // Calculate the maximum angle between segments based on the error rate (usually 0.5f)
+            float th = acosf(2*powf(1 - SMOOTH_CIRCLE_ERROR_RATE/outerRadius, 2) - 1);
+            segments = (int)ceilf((2*PI/th)/4.0f);
+            if (segments <= 0) segments = 4;
+        }
+    }
+    else
+    {
+        thick *= -1.0f;
+
+        // Calculate corner radius
+        radius = (rec.width > rec.height)? (rec.height*roundness)/2 : (rec.width*roundness)/2;
+        if (radius <= 0.0f) return; // Only possible if the rectangle has 0 width or height
+
+        // Expand the rectangle
+        rec.x -= thick;
+        rec.y -= thick;
+        rec.width += thick*2.0f;
+        rec.height += thick*2.0f;
+
+        innerRadius = radius;
+        outerRadius = innerRadius + thick;
+        roundedOutlineThick = thick;
+
+        // Calculate number of segments to use for the corners
+        if (segments < 4)
+        {
+            // Calculate the maximum angle between segments based on the error rate (usually 0.5f)
+            float th = acosf(2*powf(1 - SMOOTH_CIRCLE_ERROR_RATE/innerRadius, 2) - 1);
+            segments = (int)ceilf((2*PI/th)/4.0f);
+            if (segments <= 0) segments = 4;
+        }
+    }
+
+    float stepLength = 90.0f/(float)segments;
 
     /*
     Quick sketch to make sense of all of this,
@@ -945,30 +1122,47 @@ void DrawRectangleRoundedLinesEx(Rectangle rec, float roundness, int segments, f
           \\ P13              P12 //
            P5 ================== P4
     */
+
+    // The x-coordinates used for the outline
+    const float x0 = rec.x + outerRadius;
+    const float x1 = (rec.x + rec.width) - outerRadius;
+    const float x2 = rec.x + rec.width;
+    const float x3 = rec.x;
+    const float x4 = rec.x + rec.width - roundedOutlineThick;
+    const float x5 = rec.x + roundedOutlineThick;
+
+    // The y-coordinates used for the outline
+    const float y0 = rec.y;
+    const float y1 = rec.y + outerRadius;
+    const float y2 = (rec.y + rec.height) - outerRadius;
+    const float y3 = rec.y + rec.height;
+    const float y4 = rec.y + roundedOutlineThick;
+    const float y5 = rec.y + rec.height - roundedOutlineThick;
+
     const Vector2 point[16] = {
-        {(float)rec.x + innerRadius + 0.5f, rec.y - thick + 0.5f},
-        {(float)(rec.x + rec.width) - innerRadius - 0.5f, rec.y - thick + 0.5f},
-        {rec.x + rec.width + thick - 0.5f, (float)rec.y + innerRadius + 0.5f}, // PO, P1, P2
-        {rec.x + rec.width + thick - 0.5f, (float)(rec.y + rec.height) - innerRadius - 0.5f},
-        {(float)(rec.x + rec.width) - innerRadius - 0.5f, rec.y + rec.height + thick - 0.5f}, // P3, P4
-        {(float)rec.x + innerRadius + 0.5f, rec.y + rec.height + thick - 0.5f},
-        {rec.x - thick + 0.5f, (float)(rec.y + rec.height) - innerRadius - 0.5f},
-        {rec.x - thick + 0.5f, (float)rec.y + innerRadius + 0.5f}, // P5, P6, P7
-        {(float)rec.x + innerRadius + 0.5f, rec.y + 0.5f},
-        {(float)(rec.x + rec.width) - innerRadius - 0.5f, rec.y + 0.5f}, // P8, P9
-        {rec.x + rec.width - 0.5f, (float)rec.y + innerRadius + 0.5f},
-        {rec.x + rec.width - 0.5f, (float)(rec.y + rec.height) - innerRadius - 0.5f}, // P10, P11
-        {(float)(rec.x + rec.width) - innerRadius - 0.5f, rec.y + rec.height - 0.5f},
-        {(float)rec.x + innerRadius + 0.5f, rec.y + rec.height - 0.5f}, // P12, P13
-        {rec.x + 0.5f, (float)(rec.y + rec.height) - innerRadius - 0.5f},
-        {rec.x + 0.5f, (float)rec.y + innerRadius + 0.5f} // P14, P15
+        {x0, y0}, // P0
+        {x1, y0}, // P1
+        {x2, y1}, // P2
+        {x2, y2}, // P3
+        {x1, y3}, // P4
+        {x0, y3}, // P5
+        {x3, y2}, // P6
+        {x3, y1}, // P7
+        {x0, y4}, // P8
+        {x1, y4}, // P9
+        {x4, y1}, // P10
+        {x4, y2}, // P11
+        {x1, y5}, // P12
+        {x0, y5}, // P13
+        {x5, y2}, // P14
+        {x5, y1}  // P15
     };
 
     const Vector2 centers[4] = {
-        {(float)rec.x + innerRadius + 0.5f, (float)rec.y + innerRadius + 0.5f},
-        {(float)(rec.x + rec.width) - innerRadius - 0.5f, (float)rec.y + innerRadius + 0.5f}, // P16, P17
-        {(float)(rec.x + rec.width) - innerRadius - 0.5f, (float)(rec.y + rec.height) - innerRadius - 0.5f},
-        {(float)rec.x + innerRadius + 0.5f, (float)(rec.y + rec.height) - innerRadius - 0.5f} // P18, P19
+        {x0, y1}, // P16
+        {x1, y1}, // P17
+        {x1, y2}, // P18
+        {x0, y2}  // P19
     };
 
     const float angles[4] = { 180.0f, 270.0f, 0.0f, 90.0f };
@@ -1188,7 +1382,21 @@ void DrawPolyLinesEx(Vector2 center, int sides, float radius, float rotation, fl
     if (sides < 3) sides = 3;
     float centralAngle = rotation*DEG2RAD;
     float exteriorAngle = 360.0f/(float)sides*DEG2RAD;
-    float innerRadius = radius - (thick*cosf(DEG2RAD*exteriorAngle/2.0f));
+    float apothem = radius*cosf(DEG2RAD*180.0f/(float)sides);
+
+    float outerRadius = 0.0f;
+    float innerRadius = 0.0f;
+    if (thick >= 0.0f)
+    {
+        outerRadius = radius;
+        innerRadius = fmaxf(0.0f, radius - thick*(radius/apothem));
+    }
+    else
+    {
+        thick *= -1.0f;
+        outerRadius = radius + thick*(radius/apothem);
+        innerRadius = radius;
+    }
 
 #if SUPPORT_QUADS_DRAW_MODE
     rlSetTexture(GetShapesTexture().id);
@@ -1201,7 +1409,7 @@ void DrawPolyLinesEx(Vector2 center, int sides, float radius, float rotation, fl
             float nextAngle = centralAngle + exteriorAngle;
 
             rlTexCoord2f(shapeRect.x/texShapes.width, (shapeRect.y + shapeRect.height)/texShapes.height);
-            rlVertex2f(center.x + cosf(centralAngle)*radius, center.y + sinf(centralAngle)*radius);
+            rlVertex2f(center.x + cosf(centralAngle)*outerRadius, center.y + sinf(centralAngle)*outerRadius);
 
             rlTexCoord2f(shapeRect.x/texShapes.width, shapeRect.y/texShapes.height);
             rlVertex2f(center.x + cosf(centralAngle)*innerRadius, center.y + sinf(centralAngle)*innerRadius);
@@ -1210,7 +1418,7 @@ void DrawPolyLinesEx(Vector2 center, int sides, float radius, float rotation, fl
             rlVertex2f(center.x + cosf(nextAngle)*innerRadius, center.y + sinf(nextAngle)*innerRadius);
 
             rlTexCoord2f((shapeRect.x + shapeRect.width)/texShapes.width, shapeRect.y/texShapes.height);
-            rlVertex2f(center.x + cosf(nextAngle)*radius, center.y + sinf(nextAngle)*radius);
+            rlVertex2f(center.x + cosf(nextAngle)*outerRadius, center.y + sinf(nextAngle)*outerRadius);
 
             centralAngle = nextAngle;
         }
@@ -1223,13 +1431,13 @@ void DrawPolyLinesEx(Vector2 center, int sides, float radius, float rotation, fl
             rlColor4ub(color.r, color.g, color.b, color.a);
             float nextAngle = centralAngle + exteriorAngle;
 
-            rlVertex2f(center.x + cosf(nextAngle)*radius, center.y + sinf(nextAngle)*radius);
-            rlVertex2f(center.x + cosf(centralAngle)*radius, center.y + sinf(centralAngle)*radius);
+            rlVertex2f(center.x + cosf(nextAngle)*outerRadius, center.y + sinf(nextAngle)*outerRadius);
+            rlVertex2f(center.x + cosf(centralAngle)*outerRadius, center.y + sinf(centralAngle)*outerRadius);
             rlVertex2f(center.x + cosf(centralAngle)*innerRadius, center.y + sinf(centralAngle)*innerRadius);
 
             rlVertex2f(center.x + cosf(centralAngle)*innerRadius, center.y + sinf(centralAngle)*innerRadius);
             rlVertex2f(center.x + cosf(nextAngle)*innerRadius, center.y + sinf(nextAngle)*innerRadius);
-            rlVertex2f(center.x + cosf(nextAngle)*radius, center.y + sinf(nextAngle)*radius);
+            rlVertex2f(center.x + cosf(nextAngle)*outerRadius, center.y + sinf(nextAngle)*outerRadius);
 
             centralAngle = nextAngle;
         }

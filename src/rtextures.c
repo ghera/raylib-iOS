@@ -315,7 +315,7 @@ Image LoadImageRaw(const char *fileName, int width, int height, int format, int 
         unsigned char *dataPtr = fileData;
         int size = GetPixelDataSize(width, height, format);
 
-        if (size <= dataSize)   // Security check
+        if (size <= dataSize) // Security check
         {
             // Offset file data to expected raw image by header size
             if ((headerSize > 0) && ((headerSize + size) <= dataSize)) dataPtr += headerSize;
@@ -1250,7 +1250,7 @@ Image ImageFromImage(Image image, Rectangle rec)
 
             for (int y = 0; y < (int)rec.height; y++)
             {
-                memcpy(((unsigned char *)result.data) + y*(int)rec.width*bytesPerPixel, 
+                memcpy(((unsigned char *)result.data) + y*(int)rec.width*bytesPerPixel,
                     ((unsigned char *)image.data) + ((y + (int)rec.y)*image.width + (int)rec.x)*bytesPerPixel,
                     (int)rec.width*bytesPerPixel);
             }
@@ -4288,7 +4288,7 @@ TextureCubemap LoadTextureCubemap(Image image, int layout)
 {
     TextureCubemap cubemap = { 0 };
 
-    if (layout == CUBEMAP_LAYOUT_AUTO_DETECT)      // Try to automatically guess layout type
+    if (layout == CUBEMAP_LAYOUT_AUTO_DETECT) // Try to automatically guess layout type
     {
         // Check image width/height to determine the type of cubemap provided
         if (image.width > image.height)
@@ -5523,7 +5523,7 @@ int GetPixelDataSize(int width, int height, int format)
         case PIXELFORMAT_COMPRESSED_ASTC_8x8_RGBA: bpp = 2; break;
         default: break;
     }
-    
+
     unsigned long long dataSizeBytes = ((unsigned long long)width*height*bpp) >> 3;  // Get size in bytes (dividing by 8)
 
     if (dataSizeBytes < INT_MAX)
@@ -5538,7 +5538,7 @@ int GetPixelDataSize(int width, int height, int format)
             else if ((format >= PIXELFORMAT_COMPRESSED_DXT3_RGBA) && (format < PIXELFORMAT_COMPRESSED_ASTC_8x8_RGBA)) dataSize = 16;
         }
     }
-    
+
     // NOTE: In case required image data larger than 2GB, no memory allocated at all (NULL)
     if (dataSize == 0) TRACELOG(LOG_WARNING, "Requested image size is larger than 2GB, it can not be allocated");
 

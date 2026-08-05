@@ -1488,7 +1488,7 @@ void OpenURL(const char *url)
         TRACELOG(LOG_WARNING, "SYSTEM: Provided URL must start with 'http://' or 'https://' protocols");
     }
     else
-    {       
+    {
         char *cmd = (char *)RL_CALLOC(strlen(url) + 16, sizeof(char));
 #if defined(_WIN32)
         sprintf(cmd, "explorer \"%s\"", url);
@@ -1613,15 +1613,15 @@ void PollInputEvents(void)
     }
 
     //-----------------------------------------------------------------------------
-    // using RGFW callbacks instead of polling
+    // Using RGFW callbacks instead of polling
     RGFW_pollEvents();
     //-----------------------------------------------------------------------------
 
-    mg_event gamepad_event;
+    mg_event gamepad_event = { 0 };
     while (mg_gamepads_check_event(&platform.minigamepad, &gamepad_event))
     {
         int gamepadIndex = gamepad_event.gamepad->index;
-        
+
         switch (gamepad_event.type)
         {
             case MG_EVENT_BUTTON_PRESS:
@@ -1682,10 +1682,10 @@ void PollInputEvents(void)
                     if (platform.minigamepad.gamepads[gamepadIndex].axes[i].supported) axisCount += 1;
                     else break;
                 }
-                
+
                 CORE.Input.Gamepad.axisCount[gamepadIndex] = axisCount;
                 snprintf(CORE.Input.Gamepad.name[gamepadIndex], MAX_GAMEPAD_NAME_LENGTH, "%s", platform.minigamepad.gamepads[gamepadIndex].name);
-                
+
             } break;
             case MG_EVENT_GAMEPAD_DISCONNECT: CORE.Input.Gamepad.ready[gamepadIndex] = false; break;
             default: break;
