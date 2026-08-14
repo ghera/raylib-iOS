@@ -1489,6 +1489,9 @@ void DrawCircleSector(Vector2 center, float radius, float startAngle, float endA
         endAngle = tmp;
     }
 
+    // Drawing a whole circle, things get weird without limiting the circle to 360 degrees
+    if (endAngle - startAngle >= 360.0f) endAngle = startAngle + 360.0f;
+
     int minSegments = (int)ceilf((endAngle - startAngle)/90);
 
     if (segments < minSegments)
@@ -1584,6 +1587,14 @@ void DrawCircleSectorLines(Vector2 center, float radius, float startAngle, float
         endAngle = tmp;
     }
 
+    bool showCapLines = true;
+    // Drawing a whole circle, things get weird without limiting the circle to 360 degrees
+    if (endAngle - startAngle >= 360.0f)
+    {
+        showCapLines = false;
+        endAngle = startAngle + 360.0f;
+    }
+
     int minSegments = (int)ceilf((endAngle - startAngle)/90);
 
     if (segments < minSegments)
@@ -1600,7 +1611,6 @@ void DrawCircleSectorLines(Vector2 center, float radius, float startAngle, float
 
     float stepLength = (endAngle - startAngle)/(float)segments;
     float angle = startAngle;
-    bool showCapLines = true;
 
     rlBegin(RL_LINES);
         if (showCapLines)
@@ -1718,6 +1728,9 @@ void DrawRing(Vector2 center, float innerRadius, float outerRadius, float startA
         endAngle = tmp;
     }
 
+    // Drawing a whole circle, things get weird without limiting the circle to 360 degrees
+    if (endAngle - startAngle >= 360.0f) endAngle = startAngle + 360.0f;
+
     int minSegments = (int)ceilf((endAngle - startAngle)/90);
 
     if (segments < minSegments)
@@ -1812,6 +1825,14 @@ void DrawRingLines(Vector2 center, float innerRadius, float outerRadius, float s
         endAngle = tmp;
     }
 
+    bool showCapLines = true;
+    // Drawing a whole circle, things get weird without limiting the circle to 360 degrees
+    if (endAngle - startAngle >= 360.0f)
+    {
+        showCapLines = false;
+        endAngle = startAngle + 360.0f;
+    }
+
     int minSegments = (int)ceilf((endAngle - startAngle)/90);
 
     if (segments < minSegments)
@@ -1834,7 +1855,6 @@ void DrawRingLines(Vector2 center, float innerRadius, float outerRadius, float s
 
     float stepLength = (endAngle - startAngle)/(float)segments;
     float angle = startAngle;
-    bool showCapLines = true;
 
     rlBegin(RL_LINES);
         if (showCapLines)
