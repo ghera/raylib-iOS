@@ -165,6 +165,7 @@
     #if defined(__cplusplus)
     extern "C" {
     #endif
+    __declspec(dllimport) unsigned long __stdcall GetFileAttributesA(const char *lpFileName);
     __declspec(dllimport) unsigned long __stdcall GetModuleFileNameA(struct HINSTANCE__ *hModule, char *lpFilename, unsigned long nSize);
     __declspec(dllimport) unsigned long __stdcall GetModuleFileNameW(struct HINSTANCE__ *hModule, wchar_t *lpFilename, unsigned long nSize);
     __declspec(dllimport) int __stdcall WideCharToMultiByte(unsigned int cp, unsigned long flags, const wchar_t *widestr, int cchwide, char *str, int cbmb, const char *defchar, int *used_default);
@@ -2416,6 +2417,24 @@ bool IsFileExtension(const char *fileName, const char *ext)
     return result;
 }
 
+// Check if file path (file or directory) is hidden by OS
+bool IsFileHidden(const char *filePath)
+{
+    bool result = false;
+#if defined(_WIN32)
+    unsigned long attribs = GetFileAttributesA(filePath);
+
+    // Check !INVALID_FILE_ATTRIBUTES and FILE_ATTRIBUTE_HIDDEN
+    if ((attribs != -1) && ((attribs & 0x2UL) != 0)) result = true;
+#else
+    const char *basePath = strrchr(filePath, '/');
+    basePath = (basePath? basePath + 1 : filePath);
+
+    if ((basePath[0] == '.') && (strcmp(basePath, ".") != 0) && (strcmp(basePath, "..") != 0)) result = true;
+#endif
+    return result;
+}
+
 // Check if directory path exists
 bool DirectoryExists(const char *dirPath)
 {
@@ -2587,19 +2606,27 @@ const char *GetPrevDirectoryPath(const char *dirPath)
 {
     static char prevDirPath[MAX_FILEPATH_LENGTH] = { 0 };
     memset(prevDirPath, 0, MAX_FILEPATH_LENGTH);
-    int dirPathLength = (int)strlen(dirPath);
 
-    if (dirPathLength <= 3) snprintf(prevDirPath, MAX_FILEPATH_LENGTH, "%s", dirPath);
-
-    for (int i = (dirPathLength - 1); (i >= 0) && (dirPathLength > 3); i--)
+    const int lastIndex = (int)strlen(dirPath) - 1;
+    bool isFile = IsPathFile(dirPath);
+    for (int i = lastIndex; i >= 0; i--)
     {
+        // If the character is a path separator.
         if ((dirPath[i] == '\\') || (dirPath[i] == '/'))
         {
-            // Check for root: "C:\" or "/"
-            if (((i == 2) && (dirPath[1] ==':')) || (i == 0)) i++;
+            // If this character is a leading '/' (e.g. the '/' in "/usr") or
+            // part of a drive root (e.g. "C:\"), include it with the result.
+            if ((i == 0) || ((i == 2) && (dirPath[1] == ':'))) i += 1;
+            // If this character is a trailing path separator (e.g. the last
+            // '/' in "/usr/bin/" or the last '\' in "C:\raylib\"), continue.
+            else if (i == lastIndex) continue;
 
-            memcpy(prevDirPath, dirPath, i);
-            break;
+            if (!isFile)
+            {
+                memcpy(prevDirPath, dirPath, i);
+                break;
+            }
+            else isFile = false;
         }
     }
 
@@ -2866,7 +2893,7 @@ bool IsPathAbsolute(const char *path)
         // Check UNC path (\\server\share)
         if ((path[0] == '\\') && (path[1] == '\\')) result = true;
         // Check path starts with a drive letter (e.g. C:\ or D:/)
-        else if ((((path[0] >= 'A') && (path[0] <= 'Z')) || ((path[0] >= 'a') && (path[0] <= 'z'))) && 
+        else if ((((path[0] >= 'A') && (path[0] <= 'Z')) || ((path[0] >= 'a') && (path[0] <= 'z'))) &&
                  (path[1] != '\0') && (path[1] == ':') && (path[2] != '\0') && ((path[2] == '\\') || (path[2] == '/'))) result = true;
 #else
         // Check POSIX path, must start with /
