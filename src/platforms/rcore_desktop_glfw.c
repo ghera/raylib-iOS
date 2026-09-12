@@ -1804,11 +1804,11 @@ int InitPlatform(void)
 
         // Center window into current monitor
     #if defined(__APPLE__)
-        CORE.Window.position.x = monitorX + (monitorWidth - CORE.Window.screen.width)/2;
-        CORE.Window.position.y = monitorY + (monitorHeight - CORE.Window.screen.height)/2;
+        CORE.Window.position.x = monitorX + (monitorWidth - (int)CORE.Window.screen.width)/2;
+        CORE.Window.position.y = monitorY + (monitorHeight - (int)CORE.Window.screen.height)/2;
     #else
-        CORE.Window.position.x = monitorX + (monitorWidth - CORE.Window.render.width)/2;
-        CORE.Window.position.y = monitorY + (monitorHeight - CORE.Window.render.height)/2;
+        CORE.Window.position.x = monitorX + (monitorWidth - (int)CORE.Window.render.width)/2;
+        CORE.Window.position.y = monitorY + (monitorHeight - (int)CORE.Window.render.height)/2;
     #endif
         SetWindowPosition(CORE.Window.position.x, CORE.Window.position.y);
 
@@ -2207,7 +2207,6 @@ static void CursorEnterCallback(GLFWwindow *window, int entered)
     else
     {
         CORE.Input.Mouse.cursorOnScreen = false;
-        CORE.Input.Mouse.currentPosition = (Vector2){ 0 };
     }
 }
 
