@@ -65,6 +65,15 @@ extern void ios_destroy();
 
 @interface AppDelegate : UIResponder <UIApplicationDelegate>
 @property(strong, nonatomic) UIWindow* window;
+@property(strong, nonatomic) CADisplayLink* displayLink;
+@end
+
+// MARK: - SceneDelegate interface
+
+API_AVAILABLE(ios(13.0))
+@interface SceneDelegate : UIResponder <UIWindowSceneDelegate>
+@property(strong, nonatomic) UIWindow* window;
+@property(strong, nonatomic) CADisplayLink* displayLink;
 @end
 
 // MARK: -
@@ -80,6 +89,9 @@ typedef struct {
     EGLSurface surface;  // Surface to draw on, framebuffers (connected to context)
     EGLContext context;  // Graphic context, mode in which drawing can be done
     EGLConfig config;    // Graphic config
+
+    bool appStarted;
+    bool appDestroyed;
 } PlatformData;
 
 //----------------------------------------------------------------------------------
@@ -124,6 +136,48 @@ static int MapPointId(UITouch* touch) {
 
 int InitPlatform(void);     // Initialize platform (graphics, inputs and more)
 void ClosePlatform(void);   // Close platform
+
+static void SetWindowFocusedState(bool focused) {
+    if (focused) CORE.Window.flags &= ~FLAG_WINDOW_UNFOCUSED;
+    else CORE.Window.flags |= FLAG_WINDOW_UNFOCUSED;
+}
+
+static GameViewController* CreateRootViewControllerForWindow(UIWindow* window) {
+    GameViewController* viewController = [[GameViewController alloc] init];
+    window.rootViewController = viewController;
+    [window makeKeyAndVisible];
+    [viewController loadViewIfNeeded];
+    return viewController;
+}
+
+static CADisplayLink* CreateDisplayLink(GameViewController* viewController) {
+    CADisplayLink* displayLink = [CADisplayLink displayLinkWithTarget:viewController selector:@selector(update)];
+    [displayLink addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSDefaultRunLoopMode];
+    return displayLink;
+}
+
+static void StartIOSCallbacksIfNeeded(void) {
+    if (platform.appStarted) return;
+
+    platform.appStarted = true;
+    platform.appDestroyed = false;
+    ios_ready();
+}
+
+static void DestroyIOSCallbacksIfNeeded(void) {
+    if (!platform.appStarted || platform.appDestroyed) return;
+
+    platform.appDestroyed = true;
+    ios_destroy();
+
+    if (platform.device != EGL_NO_DISPLAY) {
+        // the user does not call CloseWindow() before exiting
+        TRACELOG(LOG_ERROR, "DISPLAY: CloseWindow() should be called before terminating the application");
+    }
+
+    platform.appStarted = false;
+    platform.viewController = nil;
+}
 
 // Check if application should close
 bool WindowShouldClose(void) {
@@ -546,7 +600,9 @@ int InitPlatform(void) {
         TRACELOG(LOG_WARNING, "DISPLAY: Failed to attach EGL rendering context to EGL surface");
         return -1;
     } else {
-        CGSize screenSize = [[UIScreen mainScreen] bounds].size;
+        CGSize screenSize = CGSizeZero;
+        if (platform.viewController != nil) screenSize = platform.viewController.view.bounds.size;
+        if (CGSizeEqualToSize(screenSize, CGSizeZero)) screenSize = [[UIScreen mainScreen] bounds].size;
         SetupWindowSizes(screenSize.width, screenSize.height);
 
         TRACELOG(LOG_INFO, "DISPLAY: Device initialized successfully");
@@ -606,6 +662,11 @@ void ClosePlatform(void) {
 }
 
 void RecreatePlatformSurface(void* layer, int width, int height) {
+    if ((platform.device == EGL_NO_DISPLAY) || (platform.context == EGL_NO_CONTEXT)) {
+        SetupWindowSizes(width, height);
+        return;
+    }
+
     if (platform.surface != EGL_NO_SURFACE) {
         eglDestroySurface(platform.device, platform.surface);
     }
@@ -767,25 +828,34 @@ static void SendGestureEvent(NSSet<UITouch*>* touches, int action) {
 @implementation AppDelegate
 
 - (BOOL)application:(UIApplication*)application didFinishLaunchingWithOptions:(NSDictionary*)launchOptions {
-    // Override point for customization after application launch.
+    if (@available(iOS 13.0, *)) {
+        // Window setup is handled by SceneDelegate on iOS 13+.
+        return YES;
+    }
+
     self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
-    self.window.rootViewController = [[GameViewController alloc] init];
-    [self.window makeKeyAndVisible];
-    ios_ready();
-    CADisplayLink* displayLink = [CADisplayLink displayLinkWithTarget:self.window.rootViewController selector:@selector(update)];
-    [displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+    GameViewController* viewController = CreateRootViewControllerForWindow(self.window);
+    SetWindowFocusedState(true);
+    StartIOSCallbacksIfNeeded();
+    self.displayLink = CreateDisplayLink(viewController);
     return YES;
+}
+
+- (UISceneConfiguration*)application:(UIApplication*)application configurationForConnectingSceneSession:(UISceneSession*)connectingSceneSession options:(UISceneConnectionOptions*)options API_AVAILABLE(ios(13.0)) {
+    UISceneConfiguration* configuration = [[UISceneConfiguration alloc] initWithName:@"Default Configuration" sessionRole:connectingSceneSession.role];
+    configuration.delegateClass = [SceneDelegate class];
+    return configuration;
 }
 
 - (void)applicationWillResignActive:(UIApplication*)application {
     // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
     // Use this method to pause ongoing tasks, disable timers, and invalidate graphics rendering callbacks. Games should use this method to pause the game.
-    CORE.Window.flags |= FLAG_WINDOW_UNFOCUSED;
+    SetWindowFocusedState(false);
 }
 
 - (void)applicationDidBecomeActive:(UIApplication*)application {
     // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
-    CORE.Window.flags &= ~FLAG_WINDOW_UNFOCUSED;
+    SetWindowFocusedState(true);
 }
 
 - (void)applicationDidEnterBackground:(UIApplication*)application {
@@ -797,14 +867,41 @@ static void SendGestureEvent(NSSet<UITouch*>* touches, int action) {
 }
 
 - (void)applicationWillTerminate:(UIApplication*)application {
-    ios_destroy();
+    [self.displayLink invalidate];
+    self.displayLink = nil;
+    DestroyIOSCallbacksIfNeeded();
+}
 
-    if (platform.device != EGL_NO_DISPLAY) {
-        // the user does not call CloseWindow() before exiting
-        TRACELOG(LOG_ERROR, "DISPLAY: CloseWindow() should be called before terminating the application");
-    }
-    // If 'platform.device' is already set to 'EGL_NO_DISPLAY'
-    // this means that the user has already called 'CloseWindow()'
+@end
+
+// MARK: - SceneDelegate implementation
+
+API_AVAILABLE(ios(13.0))
+@implementation SceneDelegate
+
+- (void)scene:(UIScene*)scene willConnectToSession:(UISceneSession*)session options:(UISceneConnectionOptions*)connectionOptions {
+    if (![scene isKindOfClass:[UIWindowScene class]]) return;
+
+    self.window = [[UIWindow alloc] initWithWindowScene:(UIWindowScene*)scene];
+    GameViewController* viewController = CreateRootViewControllerForWindow(self.window);
+    SetWindowFocusedState(true);
+    StartIOSCallbacksIfNeeded();
+    self.displayLink = CreateDisplayLink(viewController);
+}
+
+- (void)sceneDidBecomeActive:(UIScene*)scene {
+    SetWindowFocusedState(true);
+}
+
+- (void)sceneWillResignActive:(UIScene*)scene {
+    SetWindowFocusedState(false);
+}
+
+- (void)sceneDidDisconnect:(UIScene*)scene {
+    [self.displayLink invalidate];
+    self.displayLink = nil;
+    self.window = nil;
+    DestroyIOSCallbacksIfNeeded();
 }
 
 @end
