@@ -2041,12 +2041,12 @@ bool ExportMesh(Mesh mesh, const char *fileName)
     {
         // TODO: Implement gltf/glb support
         /*
-        cgltf_size expected = cgltf_write(options, NULL, 0, data);
-        char *buffer = (char *)RL_CALLOC(expected, 0);
-        cgltf_size actual = cgltf_write(options, buffer, expected, data);
+        cgltf_size expectedSize = cgltf_write(options, NULL, 0, data);
+        char *buffer = (char *)RL_CALLOC(expectedSize, 0);
+        cgltf_size actualSize = cgltf_write(options, buffer, expectedSize, data);
 
         // NOTE: cgltf_write() includes a NULL terminator that should be ommited in case of a .glb
-        if (options->type == cgltf_file_type_glb) cgltf_write_glb(file, buffer, actual - 1, data->bin, data->bin_size);
+        if (options->type == cgltf_file_type_glb) cgltf_write_glb(fileName, buffer, actual - 1, data->bin, data->bin_size);
         else SaveFileText(fileName, buffer); // Write a plain JSON file
         */
     }
@@ -2196,8 +2196,6 @@ Material *LoadMaterials(const char *fileName, int *materialCount)
 {
     Material *materials = NULL;
     unsigned int count = 0;
-
-    // TODO: Support IQM and GLTF for materials parsing
 
 #if SUPPORT_FILEFORMAT_MTL
     if (IsFileExtension(fileName, ".mtl"))
@@ -4000,7 +3998,7 @@ void DrawBillboard(Camera camera, Texture2D texture, Vector3 position, float sca
 {
     Rectangle rec = { 0.0f, 0.0f, (float)texture.width, (float)texture.height };
 
-    DrawBillboardRec(camera, texture, rec, position, (Vector2){ scale*fabsf((float)rec.width/rec.height), scale }, tint);
+    DrawBillboardRec(camera, texture, rec, position, (Vector2){ scale*fabsf(rec.width/rec.height), scale }, tint);
 }
 
 // Draw a billboard (part of a texture defined by a rectangle)
@@ -4069,10 +4067,10 @@ void DrawBillboardPro(Camera camera, Texture2D texture, Rectangle rec, Vector3 p
     }
 
     Vector2 texcoords[4];
-    texcoords[0] = (Vector2){ (float)rec.x/texture.width, (float)(rec.y + rec.height)/texture.height };
-    texcoords[1] = (Vector2){ (float)(rec.x + rec.width)/texture.width, (float)(rec.y + rec.height)/texture.height };
-    texcoords[2] = (Vector2){ (float)(rec.x + rec.width)/texture.width, (float)rec.y/texture.height };
-    texcoords[3] = (Vector2){ (float)rec.x/texture.width, (float)rec.y/texture.height };
+    texcoords[0] = (Vector2){ rec.x/texture.width, (rec.y + rec.height)/texture.height };
+    texcoords[1] = (Vector2){ (rec.x + rec.width)/texture.width, (rec.y + rec.height)/texture.height };
+    texcoords[2] = (Vector2){ (rec.x + rec.width)/texture.width, rec.y/texture.height };
+    texcoords[3] = (Vector2){ rec.x/texture.width, rec.y/texture.height };
 
     rlSetTexture(texture.id);
     rlBegin(RL_QUADS);
@@ -5142,7 +5140,7 @@ static ModelAnimation *LoadModelAnimationsIQM(const char *fileName, int *animCou
         animations[a].keyframeCount = anim[a].num_frames;
         animations[a].keyframePoses = (Transform **)RL_CALLOC(anim[a].num_frames, sizeof(Transform *));
         memcpy(animations[a].name, fileDataPtr + iqmHeader->ofs_text + anim[a].name, 32);
-        // TODO: Use animation framerate data?
+        // TODO: Store animation framerate data?
         //animations[a].framerate = anim.framerate;
 
         TRACELOG(LOG_INFO, "MODEL: [%s] Loaded animation: %s | Frames: %d | Framerate: %f", fileName, animations[a].name, animations[a].keyframeCount, anim[a].framerate);

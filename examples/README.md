@@ -13,11 +13,13 @@ The examples assume you have already built the `raylib` library in `../src`.
 The [Zig](https://ziglang.org/) toolchain can compile `C` and `C++` in addition to `Zig`.
 You may find it easier to use than other toolchains, especially when it comes to cross-compiling.
 
-- `zig build` to compile all examples
+Run the following commands from the repository root:
+
+- `zig build examples` to compile all examples
 - `zig build [module]` to compile all examples for a module (e.g. `zig build core`)
 - `zig build [example]` to compile _and run_ a particular example (e.g. `zig build core_basic_window`)
 
-## EXAMPLES COLLECTION [TOTAL: 212]
+## EXAMPLES COLLECTION [TOTAL: 213]
 
 ### category: core [49]
 
@@ -75,7 +77,7 @@ Examples using raylib [core](../src/rcore.c) module platform functionality: wind
 | [core_keyboard_testbed](core/core_keyboard_testbed.c) | <img src="core/core_keyboard_testbed.png" alt="core_keyboard_testbed" width="80"> | ⭐⭐☆☆ | 5.6 | 5.6 | [Ramon Santamaria](https://github.com/raysan5) |
 | [core_window_web](core/core_window_web.c) | <img src="core/core_window_web.png" alt="core_window_web" width="80"> | ⭐☆☆☆ | 1.3 | 5.5 | [Ramon Santamaria](https://github.com/raysan5) |
 
-### category: shapes [40]
+### category: shapes [41]
 
 Examples using raylib shapes drawing functionality, provided by raylib [shapes](../src/rshapes.c) module.
 
@@ -121,6 +123,7 @@ Examples using raylib shapes drawing functionality, provided by raylib [shapes](
 | [shapes_penrose_tile](shapes/shapes_penrose_tile.c) | <img src="shapes/shapes_penrose_tile.png" alt="shapes_penrose_tile" width="80"> | ⭐⭐⭐⭐️ | 5.5 | 6.0 | [David Buzatto](https://github.com/davidbuzatto) |
 | [shapes_hilbert_curve](shapes/shapes_hilbert_curve.c) | <img src="shapes/shapes_hilbert_curve.png" alt="shapes_hilbert_curve" width="80"> | ⭐⭐⭐☆ | 5.6 | 5.6 | [Hamza RAHAL](https://github.com/hmz-rhl) |
 | [shapes_easings_testbed](shapes/shapes_easings_testbed.c) | <img src="shapes/shapes_easings_testbed.png" alt="shapes_easings_testbed" width="80"> | ⭐⭐⭐☆ | 2.5 | 2.5 | [Juan Miguel López](https://github.com/flashback-fx) |
+| [shapes_drag_puzzle](shapes/shapes_drag_puzzle.c) | <img src="shapes/shapes_drag_puzzle.png" alt="shapes_drag_puzzle" width="80"> | ⭐☆☆☆ | 6.0 | 6.0 | [Gabriel Piangers](https://github.com/gabriel-piangers) |
 
 ### category: textures [32]
 
@@ -146,7 +149,7 @@ Examples using raylib textures functionality, including image/textures loading/g
 | [textures_sprite_button](textures/textures_sprite_button.c) | <img src="textures/textures_sprite_button.png" alt="textures_sprite_button" width="80"> | ⭐⭐☆☆ | 2.5 | 2.5 | [Ramon Santamaria](https://github.com/raysan5) |
 | [textures_sprite_explosion](textures/textures_sprite_explosion.c) | <img src="textures/textures_sprite_explosion.png" alt="textures_sprite_explosion" width="80"> | ⭐⭐☆☆ | 2.5 | 3.5 | [Ramon Santamaria](https://github.com/raysan5) |
 | [textures_bunnymark](textures/textures_bunnymark.c) | <img src="textures/textures_bunnymark.png" alt="textures_bunnymark" width="80"> | ⭐⭐⭐☆ | 1.6 | 2.5 | [Ramon Santamaria](https://github.com/raysan5) |
-| [textures_mouse_painting](textures/textures_mouse_painting.c) | <img src="textures/textures_mouse_painting.png" alt="textures_mouse_painting" width="80"> | ⭐⭐⭐☆ | 3.0 | 3.0 | [Chris Dill](https://github.com/MysteriousSpace) |
+| [textures_mouse_painting](textures/textures_mouse_painting.c) | <img src="textures/textures_mouse_painting.png" alt="textures_mouse_painting" width="80"> | ⭐⭐⭐☆ | 3.0 | 6.0 | [Chris Dill](https://github.com/MysteriousSpace) |
 | [textures_blend_modes](textures/textures_blend_modes.c) | <img src="textures/textures_blend_modes.png" alt="textures_blend_modes" width="80"> | ⭐☆☆☆ | 3.5 | 3.5 | [Karlo Licudine](https://github.com/accidentalrebel) |
 | [textures_tiled_drawing](textures/textures_tiled_drawing.c) | <img src="textures/textures_tiled_drawing.png" alt="textures_tiled_drawing" width="80"> | ⭐⭐⭐☆ | 3.0 | 4.2 | [Vlad Adrian](https://github.com/demizdor) |
 | [textures_polygon_drawing](textures/textures_polygon_drawing.c) | <img src="textures/textures_polygon_drawing.png" alt="textures_polygon_drawing" width="80"> | ⭐☆☆☆ | 3.7 | 3.7 | [Chris Camacho](https://github.com/chriscamacho) |
@@ -276,7 +279,7 @@ Examples using raylib audio functionality, including sound/music loading and pla
 | [audio_mixed_processor](audio/audio_mixed_processor.c) | <img src="audio/audio_mixed_processor.png" alt="audio_mixed_processor" width="80"> | ⭐⭐⭐⭐️ | 4.2 | 4.2 | [hkc](https://github.com/hatkidchan) |
 | [audio_stream_effects](audio/audio_stream_effects.c) | <img src="audio/audio_stream_effects.png" alt="audio_stream_effects" width="80"> | ⭐⭐⭐⭐️ | 4.2 | 5.0 | [Ramon Santamaria](https://github.com/raysan5) |
 | [audio_sound_multi](audio/audio_sound_multi.c) | <img src="audio/audio_sound_multi.png" alt="audio_sound_multi" width="80"> | ⭐⭐☆☆ | 5.0 | 5.0 | [Jeffery Myers](https://github.com/JeffM2501) |
-| [audio_sound_positioning](audio/audio_sound_positioning.c) | <img src="audio/audio_sound_positioning.png" alt="audio_sound_positioning" width="80"> | ⭐⭐☆☆ | 5.5 | 5.5 | [Le Juez Victor](https://github.com/Bigfoot71) |
+| [audio_sound_positioning](audio/audio_sound_positioning.c) | <img src="audio/audio_sound_positioning.png" alt="audio_sound_positioning" width="80"> | ⭐⭐☆☆ | 5.5 | 6.0 | [Le Juez Victor](https://github.com/Bigfoot71) |
 | [audio_spectrum_visualizer](audio/audio_spectrum_visualizer.c) | <img src="audio/audio_spectrum_visualizer.png" alt="audio_spectrum_visualizer" width="80"> | ⭐⭐⭐☆ | 6.0 | 6.0 | [IANN](https://github.com/meisei4) |
 | [audio_stream_callback](audio/audio_stream_callback.c) | <img src="audio/audio_stream_callback.png" alt="audio_stream_callback" width="80"> | ⭐⭐⭐☆ | 6.0 | 6.0 | [Dan Hoang](https://github.com/dan-hoang) |
 

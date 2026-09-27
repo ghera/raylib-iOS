@@ -638,7 +638,6 @@ GlyphInfo *LoadFontData(const unsigned char *fileData, int dataSize, int fontSiz
     {
         bool genFontChars = false;
         stbtt_fontinfo fontInfo = { 0 };
-        // TODO: Should a shallow copy be created to avoid "dealing" with a const user array?
         int *requiredCodepoints = (int *)codepoints;
 
         if (stbtt_InitFont(&fontInfo, (unsigned char *)fileData, 0)) // Initialize font for data reading
@@ -1242,7 +1241,7 @@ void DrawTextEx(Font font, const char *text, Vector2 position, float fontSize, f
                 DrawTextCodepoint(font, codepoint, (Vector2){ position.x + textOffsetX, position.y + textOffsetY }, fontSize, tint);
             }
 
-            if (font.glyphs[index].advanceX == 0) textOffsetX += ((float)font.recs[index].width*scaleFactor + spacing);
+            if (font.glyphs[index].advanceX == 0) textOffsetX += (font.recs[index].width*scaleFactor + spacing);
             else textOffsetX += ((float)font.glyphs[index].advanceX*scaleFactor + spacing);
         }
 
@@ -1313,7 +1312,7 @@ void DrawTextCodepoints(Font font, const int *codepoints, int codepointCount, Ve
                 DrawTextCodepoint(font, codepoints[i], (Vector2){ position.x + textOffsetX, position.y + textOffsetY }, fontSize, tint);
             }
 
-            if (font.glyphs[index].advanceX == 0) textOffsetX += ((float)font.recs[index].width*scaleFactor + spacing);
+            if (font.glyphs[index].advanceX == 0) textOffsetX += (font.recs[index].width*scaleFactor + spacing);
             else textOffsetX += ((float)font.glyphs[index].advanceX*scaleFactor + spacing);
         }
     }
@@ -1797,8 +1796,6 @@ char *TextReplace(const char *text, const char *search, const char *replacement)
 
         if ((textLen + count*(replaceLen - searchLen)) < (MAX_TEXT_BUFFER_LENGTH - 1))
         {
-            // TODO: Allow copying data replaced up to maximum buffer size and stop
-
             tempPtr = buffer; // Point to result start
 
             // First time through the loop, all the variable are set correctly from here on,
@@ -1807,7 +1804,7 @@ char *TextReplace(const char *text, const char *search, const char *replacement)
             //  - 'text' points to the remainder of text after "end of replace"
             while (count > 0)
             {
-                insertPoint = (char *)strstr(text, search);
+                insertPoint = strstr(text, search);
                 lastReplacePos = (int)(insertPoint - text);
 
                 memcpy(tempPtr, text, lastReplacePos);
@@ -1872,7 +1869,7 @@ char *TextReplaceAlloc(const char *text, const char *search, const char *replace
             //  - 'text' points to the remainder of text after "end of replace"
             while (count > 0)
             {
-                insertPoint = (char *)strstr(text, search);
+                insertPoint = strstr(text, search);
                 lastReplacePos = (int)(insertPoint - text);
 
                 memcpy(temp, text, lastReplacePos);
@@ -1988,8 +1985,6 @@ char *TextInsert(const char *text, const char *insert, int position)
 
         if ((textLen + insertLen) < (MAX_TEXT_BUFFER_LENGTH - 1))
         {
-            // TODO: Allow copying data inserted up to maximum buffer size and stop
-
             for (int i = 0; i < position; i++) buffer[i] = text[i];
             for (int i = 0; i < insertLen; i++) buffer[i+position] = insert[i];
             for (int i = position; i < textLen; i++) buffer[i+insertLen] = text[i];
@@ -2121,7 +2116,7 @@ int TextFindIndex(const char *text, const char *search)
 
     if (text != NULL)
     {
-        char *ptr = (char *)strstr(text, search);
+        char *ptr = strstr(text, search);
 
         if (ptr != NULL) position = (int)(ptr - text);
     }
@@ -2131,7 +2126,7 @@ int TextFindIndex(const char *text, const char *search)
 
 // Get upper case version of provided string
 // WARNING: Limited functionality, only basic characters set
-// TODO: Support UTF-8 diacritics to upper-case, check codepoints
+// TODO: Support UTF-8 diacritics (á, ñ, ü...) to upper-case, check codepoints
 char *TextToUpper(const char *text)
 {
     static char buffer[MAX_TEXT_BUFFER_LENGTH] = { 0 };
