@@ -1234,7 +1234,7 @@ Image ImageFromImage(Image image, Rectangle rec)
     if ((image.data == NULL) || (image.width == 0) || (image.height == 0)) return result;
 
     if (image.format < PIXELFORMAT_COMPRESSED_DXT1_RGB)
-	{
+    {
         // Basic rectangle validation: size smaller than image size
         if ((rec.x >= 0) && (rec.y >= 0) && (rec.width > 0) && (rec.height > 0) &&
             (((int)rec.x + (int)rec.width) <= image.width) &&
@@ -1255,8 +1255,8 @@ Image ImageFromImage(Image image, Rectangle rec)
                     (int)rec.width*bytesPerPixel);
             }
         }
-        else TRACELOG(LOG_WARNING, "IMAGE: ImageToImage(), rectangle provided not valid");
-	}
+        else TRACELOG(LOG_WARNING, "IMAGE: ImageFromImage(), rectangle provided not valid");
+    }
     else TRACELOG(LOG_WARNING, "IMAGE: Image manipulation not supported for compressed formats");
 
     return result;
@@ -1592,7 +1592,7 @@ Image ImageTextEx(Font font, const char *text, float fontSize, float spacing, Co
         TRACELOG(LOG_INFO, "IMAGE: Text scaled by factor: %f", scaleFactor);
 
         // Using nearest-neighbor scaling algorithm for default font
-        // TODO: Support selection of preferred scaling mechanism, use flag?
+        // TODO: Support other scaling mechanism, use flag?
         if (font.texture.id == GetFontDefault().texture.id) ImageResizeNN(&imText, (int)(imSize.x*scaleFactor), (int)(imSize.y*scaleFactor));
         else ImageResize(&imText, (int)(imSize.x*scaleFactor), (int)(imSize.y*scaleFactor));
     }
@@ -2311,22 +2311,7 @@ void ImageKernelConvolution(Image *image, const float *kernel, int kernelSize)
     }
 
     Color *pixels = LoadImageColors(*image);
-
-    Vector4 *imageCopy2 = (Vector4 *)RL_MALLOC((image->height)*(image->width)*sizeof(Vector4));
-    Vector4 *temp = (Vector4 *)RL_MALLOC(kernelSize*sizeof(Vector4));
-
-    for (int i = 0; i < kernelSize; i++)
-    {
-        temp[i].x = 0.0f;
-        temp[i].y = 0.0f;
-        temp[i].z = 0.0f;
-        temp[i].w = 0.0f;
-    }
-
-    float rRes = 0.0f;
-    float gRes = 0.0f;
-    float bRes = 0.0f;
-    float aRes = 0.0f;
+    Color *result = (Color *)RL_MALLOC((image->height)*(image->width)*sizeof(Color));
 
     int startRange = 0, endRange = 0;
 
@@ -2345,83 +2330,57 @@ void ImageKernelConvolution(Image *image, const float *kernel, int kernelSize)
     {
         for (int y = 0; y < image->width; y++)
         {
+            float rRes = 0.0f;
+            float gRes = 0.0f;
+            float bRes = 0.0f;
+            float aRes = 0.0f;
+
             for (int xk = startRange; xk < endRange; xk++)
             {
+                // Clamp neighbour row and column to image bounds, edge pixels are repeated
+                int row = x + xk;
+                if (row < 0) row = 0;
+                if (row > (image->height - 1)) row = image->height - 1;
+
                 for (int yk = startRange; yk < endRange; yk++)
                 {
+                    int col = y + yk;
+                    if (col < 0) col = 0;
+                    if (col > (image->width - 1)) col = image->width - 1;
+
                     int xkabs = xk + kernelWidth/2;
                     int ykabs = yk + kernelWidth/2;
-                    unsigned int imgindex = image->width*(x + xk) + (y + yk);
+                    int imgindex = image->width*row + col;
 
-                    if (imgindex >= (unsigned int)(image->width*image->height))
-                    {
-                        temp[kernelWidth*xkabs + ykabs].x = 0.0f;
-                        temp[kernelWidth*xkabs + ykabs].y = 0.0f;
-                        temp[kernelWidth*xkabs + ykabs].z = 0.0f;
-                        temp[kernelWidth*xkabs + ykabs].w = 0.0f;
-                    }
-                    else
-                    {
-                        temp[kernelWidth*xkabs + ykabs].x = ((float)pixels[imgindex].r)/255.0f*kernel[kernelWidth*xkabs + ykabs];
-                        temp[kernelWidth*xkabs + ykabs].y = ((float)pixels[imgindex].g)/255.0f*kernel[kernelWidth*xkabs + ykabs];
-                        temp[kernelWidth*xkabs + ykabs].z = ((float)pixels[imgindex].b)/255.0f*kernel[kernelWidth*xkabs + ykabs];
-                        temp[kernelWidth*xkabs + ykabs].w = ((float)pixels[imgindex].a)/255.0f*kernel[kernelWidth*xkabs + ykabs];
-                    }
+                    rRes += ((float)pixels[imgindex].r)/255.0f*kernel[kernelWidth*xkabs + ykabs];
+                    gRes += ((float)pixels[imgindex].g)/255.0f*kernel[kernelWidth*xkabs + ykabs];
+                    bRes += ((float)pixels[imgindex].b)/255.0f*kernel[kernelWidth*xkabs + ykabs];
+                    aRes += ((float)pixels[imgindex].a)/255.0f*kernel[kernelWidth*xkabs + ykabs];
                 }
-            }
-
-            for (int i = 0; i < kernelSize; i++)
-            {
-                rRes += temp[i].x;
-                gRes += temp[i].y;
-                bRes += temp[i].z;
-                aRes += temp[i].w;
             }
 
             if (rRes < 0.0f) rRes = 0.0f;
             if (gRes < 0.0f) gRes = 0.0f;
             if (bRes < 0.0f) bRes = 0.0f;
+            if (aRes < 0.0f) aRes = 0.0f;
 
             if (rRes > 1.0f) rRes = 1.0f;
             if (gRes > 1.0f) gRes = 1.0f;
             if (bRes > 1.0f) bRes = 1.0f;
+            if (aRes > 1.0f) aRes = 1.0f;
 
-            imageCopy2[image->width*x + y].x = rRes;
-            imageCopy2[image->width*x + y].y = gRes;
-            imageCopy2[image->width*x + y].z = bRes;
-            imageCopy2[image->width*x + y].w = aRes;
-
-            rRes = 0.0f;
-            gRes = 0.0f;
-            bRes = 0.0f;
-            aRes = 0.0f;
-
-            for (int i = 0; i < kernelSize; i++)
-            {
-                temp[i].x = 0.0f;
-                temp[i].y = 0.0f;
-                temp[i].z = 0.0f;
-                temp[i].w = 0.0f;
-            }
+            result[image->width*x + y].r = (unsigned char)(rRes*255.0f);
+            result[image->width*x + y].g = (unsigned char)(gRes*255.0f);
+            result[image->width*x + y].b = (unsigned char)(bRes*255.0f);
+            result[image->width*x + y].a = (unsigned char)(aRes*255.0f);
         }
-    }
-
-    for (int i = 0; i < (image->width*image->height); i++)
-    {
-        float alpha = imageCopy2[i].w;
-
-        pixels[i].r = (unsigned char)((imageCopy2[i].x)*255.0f);
-        pixels[i].g = (unsigned char)((imageCopy2[i].y)*255.0f);
-        pixels[i].b = (unsigned char)((imageCopy2[i].z)*255.0f);
-        pixels[i].a = (unsigned char)((alpha)*255.0f);
     }
 
     int format = image->format;
     RL_FREE(image->data);
-    RL_FREE(imageCopy2);
-    RL_FREE(temp);
+    RL_FREE(pixels);
 
-    image->data = pixels;
+    image->data = result;
     image->format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
     ImageFormat(image, format);
 }
@@ -3943,7 +3902,82 @@ void ImageDrawRectangleRec(Image *dst, Rectangle rec, Color color)
 // Draw a color-filled rectangle with pro parameters within and image
 void ImageDrawRectanglePro(Image *dst, Rectangle rec, Vector2 origin, float rotation, Color color)
 {
-    // TODO: NEW: Implement ImageDrawRectanglePro()
+    // Security checks to avoid program crash
+    if ((dst == NULL) || (dst->data == NULL) || (rec.width <= 0) || (rec.height <= 0)) return;
+
+    float cosAngle = cosf(rotation*DEG2RAD);
+    float sinAngle = sinf(rotation*DEG2RAD);
+
+    // Rotation origin in world/image coordinates
+    float ox = rec.x + origin.x;
+    float oy = rec.y + origin.y;
+
+    // Rectangle corners relative to rotation origin
+    float x1 = -origin.x;
+    float y1 = -origin.y;
+
+    float x2 = rec.width - origin.x;
+    float y2 = rec.height - origin.y;
+
+    // Rotate the four corners to calculate the bounding box
+    float cornersX[4] = { x1, x2, x2, x1 };
+    float cornersY[4] = { y1, y1, y2, y2 };
+
+    float minX = 65536;
+    float minY = 65536;
+    float maxX = -65536;
+    float maxY = -65536;
+
+    for (int i = 0; i < 4; i++)
+    {
+        float rx = cornersX[i]*cosAngle - cornersY[i]*sinAngle;
+        float ry = cornersX[i]*sinAngle + cornersY[i]*cosAngle;
+
+        rx += ox;
+        ry += oy;
+
+        if (rx < minX) minX = rx;
+        if (ry < minY) minY = ry;
+        if (rx > maxX) maxX = rx;
+        if (ry > maxY) maxY = ry;
+    }
+
+    // Convert bounding box to integer pixel bounds
+    int x0 = (int)floorf(minX);
+    int y0 = (int)floorf(minY);
+    int xEnd = (int)ceilf(maxX);
+    int yEnd = (int)ceilf(maxY);
+
+    // Limit drawing to image bounds
+    if (x0 < 0) x0 = 0;
+    if (y0 < 0) y0 = 0;
+    if (xEnd > dst->width) xEnd = dst->width;
+    if (yEnd > dst->height) yEnd = dst->height;
+
+    // Safety check
+    if ((x0 >= xEnd) || (y0 >= yEnd)) return;
+
+    for (int y = y0; y < yEnd; y++)
+    {
+        for (int x = x0; x < xEnd; x++)
+        {
+            // Pixel center in world coordinates
+            float px = x + 0.5f - ox;
+            float py = y + 0.5f - oy;
+
+            // Inverse-rotate pixel into rectangle local space
+            float localX = px*cosAngle + py*sinAngle;
+            float localY = -px*sinAngle + py*cosAngle;
+
+            // Check whether pixel lies inside the rectangle
+            if ((localX >= -origin.x) && (localX < (rec.width - origin.x)) &&
+                (localY >= -origin.y) && (localY < (rec.height - origin.y)))
+            {
+                // NOTE: Pixel format conversion managed by function
+                ImageDrawPixel(dst, x, y, color);
+            }
+        }
+    }
 }
 
 // Draw rectangle lines within an image
@@ -4121,7 +4155,7 @@ void ImageDrawCircleGradient(Image *dst, Vector2 center, float radius, Color inn
                 (unsigned char)(inner.a + (outer.a - inner.a)*t)
             };
 
-            // NOTE: Pixel format conversion managed by ImageDrawPixel()
+            // NOTE: Pixel format conversion managed by function
             ImageDrawPixel(dst, x, y, color);
         }
     }
@@ -4136,9 +4170,89 @@ void ImageDrawImage(Image *dst, Image src, int posX, int posY, Color tint)
 }
 
 // Draw an image with scaling and rotation within an image
+// NOTE: Rotation applied from top-left corner origin
 void ImageDrawImageEx(Image *dst, Image src, Vector2 position, float rotation, float scale, Color tint)
 {
-    // TODO: NEW: Implement ImageDrawImageEx()
+    // Security checks to avoid program crash
+    if ((dst == NULL) || (dst->data == NULL) || (dst->width <= 0) || (dst->height <= 0) || (src.width <= 0) || (src.height <= 0)) return;
+
+    float cosA = cosf(rotation*DEG2RAD);
+    float sinA = sinf(rotation*DEG2RAD);
+
+    // Rotate around the source image top-left corner
+    float cornersX[4] = { 0.0f, src.width*scale, src.width*scale, 0.0f };
+    float cornersY[4] = { 0.0f, 0.0f, src.height*scale, src.height*scale };
+
+    float minX = 65536;
+    float minY = 65536;
+    float maxX = -65536;
+    float maxY = -65536;
+
+    // Calculate the rotated bounding box
+    for (int i = 0; i < 4; i++)
+    {
+        float rx = cornersX[i]*cosA - cornersY[i]*sinA;
+        float ry = cornersX[i]*sinA + cornersY[i]*cosA;
+
+        rx += position.x;
+        ry += position.y;
+
+        if (rx < minX) minX = rx;
+        if (ry < minY) minY = ry;
+        if (rx > maxX) maxX = rx;
+        if (ry > maxY) maxY = ry;
+    }
+
+    int x0 = (int)floorf(minX);
+    int y0 = (int)floorf(minY);
+    int x1 = (int)ceilf(maxX);
+    int y1 = (int)ceilf(maxY);
+
+    // Limit drawing to destination bounds
+    if (x0 < 0) x0 = 0;
+    if (y0 < 0) y0 = 0;
+    if (x1 > dst->width) x1 = dst->width;
+    if (y1 > dst->height) y1 = dst->height;
+
+    // Safety check
+    if ((x0 >= x1) || (y0 >= y1)) return;
+
+    for (int y = y0; y < y1; y++)
+    {
+        for (int x = x0; x < x1; x++)
+        {
+            // Destination pixel center relative to image position
+            float dx = (x + 0.5f) - position.x;
+            float dy = (y + 0.5f) - position.y;
+
+            // Inverse-rotate into the scaled source space
+            float sx = dx*cosA + dy*sinA;
+            float sy = -dx*sinA + dy*cosA;
+
+            // Revert scaling
+            sx /= scale;
+            sy /= scale;
+
+            // Skip pixels outside the source image
+            if ((sx < 0.0f) || (sy < 0.0f) || (sx >= src.width) || (sy >= src.height)) continue;
+
+            // Nearest-neighbor source sampling
+            int srcX = (int)sx;
+            int srcY = (int)sy;
+
+            Color srcColor = GetImageColor(src, srcX, srcY);
+
+            // Skip fully transparent pixels
+            if (srcColor.a == 0) continue;
+
+            // Read destination pixel and blend source over it, applying tint
+            // NOTE: ColorAlphaBlend() takes destination alpha into account,
+            // same as ImageDrawImagePro(), required to draw on transparent images
+            Color dstColor = GetImageColor(*dst, x, y);
+
+            ImageDrawPixel(dst, x, y, ColorAlphaBlend(dstColor, srcColor, tint));
+        }
+    }
 }
 
 // Draw a part of an image defined by a rectangle within an image
@@ -4723,6 +4837,7 @@ void DrawTextureV(Texture2D texture, Vector2 position, Color tint)
 }
 
 // Draw a texture with rotation and scale
+// NOTE: Rotation applied from top-left corner origin
 void DrawTextureEx(Texture2D texture, Vector2 position, float rotation, float scale, Color tint)
 {
     Rectangle srcrec = { 0.0f, 0.0f, (float)texture.width, (float)texture.height };

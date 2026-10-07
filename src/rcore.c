@@ -151,10 +151,6 @@
     #include "external/rprand.h"
 #endif
 
-#if defined(__linux__) && !defined(_GNU_SOURCE)
-    #define _GNU_SOURCE
-#endif
-
 // Platform specific defines to handle GetApplicationDirectory()
 #if defined(_WIN32)
     #if !defined(MAX_PATH)
@@ -2302,9 +2298,12 @@ int FileTextReplace(const char *fileName, const char *search, const char *replac
     {
         fileText = LoadFileText(fileName);
         fileTextUpdated = TextReplaceAlloc(fileText, search, replacement);
-        bool saved = SaveFileText(fileName, fileTextUpdated);
-        if (saved) result = 0;
-        MemFree(fileTextUpdated);
+        if (fileTextUpdated != NULL)
+        {
+            bool saved = SaveFileText(fileName, fileTextUpdated);
+            if (saved) result = 0;
+            MemFree(fileTextUpdated);
+        }
         UnloadFileText(fileText);
     }
 #else
@@ -2323,9 +2322,12 @@ int FileTextFindIndex(const char *fileName, const char *search)
     if (FileExists(fileName))
     {
         char *fileText = LoadFileText(fileName);
-        char *ptr = strstr(fileText, search);
-        if (ptr != NULL) result = (int)(ptr - fileText);
-        UnloadFileText(fileText);
+        if (fileText != NULL)
+        {
+            char *ptr = strstr(fileText, search);
+            if (ptr != NULL) result = (int)(ptr - fileText);
+            UnloadFileText(fileText);
+        }
     }
 
     return result;
