@@ -10,7 +10,7 @@ This fork is **not affiliated with the official raylib project**.
   originally based on work proposed in PR [#3880](https://github.com/raysan5/raylib/pull/3880)
   by [blueloveTH](https://github.com/blueloveTH);
   
-- Includes an example project in `projects/Xcode26` that ships with a ready-to-use
+- Includes an example project in `projects/Xcode27` that ships with a ready-to-use
   Apple Silicon ANGLE build, updated monthly from Chromium stable.
   For custom ANGLE builds, see: https://github.com/ghera/ANGLE-iOS;
 
