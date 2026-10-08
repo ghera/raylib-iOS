@@ -289,7 +289,7 @@ Vector2 GetWindowPosition(void) {
 
 // Get window scale DPI factor for current monitor
 Vector2 GetWindowScaleDPI(void) {
-    CGFloat scale = [[UIScreen mainScreen] nativeScale];
+    CGFloat scale = platform.viewController.view.window.windowScene.screen.nativeScale;
     return (Vector2){scale, scale};
 }
 
@@ -543,6 +543,8 @@ int InitPlatform(void) {
 
     // eglCreateWindowSurface(platform.device, platform.config, platform.app->window, NULL);
     // bridged cast rootViewController.view.layer; to void*
+    // Layer pixel density, same source as the render size computed by GetWindowScaleDPI()
+    platform.viewController.view.contentScaleFactor = GetWindowScaleDPI().x;
     void* native_window = (__bridge void*)platform.viewController.view.layer;
     platform.surface = eglCreateWindowSurface(platform.device, platform.config, native_window, NULL);
 
@@ -553,7 +555,8 @@ int InitPlatform(void) {
         TRACELOG(LOG_WARNING, "DISPLAY: Failed to attach EGL rendering context to EGL surface");
         return -1;
     } else {
-        CGSize screenSize = [[UIScreen mainScreen] bounds].size;
+        // View size, not screen size: still correct if the scene is smaller than the screen
+        CGSize screenSize = platform.viewController.view.bounds.size;
         SetupWindowSizes(screenSize.width, screenSize.height);
 
         TRACELOG(LOG_INFO, "DISPLAY: Device initialized successfully");
@@ -637,7 +640,6 @@ void RecreatePlatformSurface(void* layer, int width, int height) {
     // self.modalPresentationCapturesStatusBarAppearance = true;
     platform.viewController = self;
     self.view.multipleTouchEnabled = true;
-    self.view.contentScaleFactor = [[UIScreen mainScreen] nativeScale];
     [self setNeedsUpdateOfScreenEdgesDeferringSystemGestures];
 }
 
