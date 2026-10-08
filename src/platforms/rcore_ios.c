@@ -65,6 +65,11 @@ extern void ios_destroy();
 // MARK: - AppDelegate interface
 
 @interface AppDelegate : UIResponder <UIApplicationDelegate>
+@end
+
+// MARK: - SceneDelegate interface
+
+@interface SceneDelegate : UIResponder <UIWindowSceneDelegate>
 @property(strong, nonatomic) UIWindow* window;
 @end
 
@@ -761,38 +766,43 @@ static void SendGestureEvent(NSSet<UITouch*>* touches, int action) {
 
 @end
 
-// MARK: - AppDelegate implementation
+// MARK: - SceneDelegate implementation
 
-@implementation AppDelegate
+@implementation SceneDelegate
 
-- (BOOL)application:(UIApplication*)application didFinishLaunchingWithOptions:(NSDictionary*)launchOptions {
-    // Override point for customization after application launch.
-    self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+- (void)scene:(UIScene*)scene willConnectToSession:(UISceneSession*)session options:(UISceneConnectionOptions*)connectionOptions {
+    // Single fullscreen window: ignore other roles (external display) so the system keeps mirroring
+    if (![session.role isEqualToString:UIWindowSceneSessionRoleApplication]) return;
+
+    self.window = [[UIWindow alloc] initWithWindowScene:(UIWindowScene*)scene];
     self.window.rootViewController = [[GameViewController alloc] init];
     [self.window makeKeyAndVisible];
     ios_ready();
     CADisplayLink* displayLink = [CADisplayLink displayLinkWithTarget:self.window.rootViewController selector:@selector(update)];
     [displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-    return YES;
 }
 
-- (void)applicationWillResignActive:(UIApplication*)application {
-    // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
-    // Use this method to pause ongoing tasks, disable timers, and invalidate graphics rendering callbacks. Games should use this method to pause the game.
+- (void)sceneWillResignActive:(UIScene*)scene {
+    // Use this method to pause ongoing tasks, disable timers, and invalidate graphics rendering callbacks.
     CORE.Window.flags |= FLAG_WINDOW_UNFOCUSED;
 }
 
-- (void)applicationDidBecomeActive:(UIApplication*)application {
-    // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
+- (void)sceneDidBecomeActive:(UIScene*)scene {
     CORE.Window.flags &= ~FLAG_WINDOW_UNFOCUSED;
 }
 
-- (void)applicationDidEnterBackground:(UIApplication*)application {
-    // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
-}
+@end
 
-- (void)applicationWillEnterForeground:(UIApplication*)application {
-    // Called as part of the transition from the background to the active state; here you can undo many of the changes made on entering the background.
+// MARK: - AppDelegate implementation
+
+@implementation AppDelegate
+
+// Scene configuration, since the app declares no UIApplicationSceneManifest in Info.plist
+- (UISceneConfiguration*)application:(UIApplication*)application configurationForConnectingSceneSession:(UISceneSession*)connectingSceneSession options:(UISceneConnectionOptions*)options {
+    UISceneConfiguration* configuration = [UISceneConfiguration configurationWithName:@"Default Configuration" sessionRole:connectingSceneSession.role];
+    configuration.sceneClass = [UIWindowScene class];
+    configuration.delegateClass = [SceneDelegate class];
+    return configuration;
 }
 
 - (void)applicationWillTerminate:(UIApplication*)application {
