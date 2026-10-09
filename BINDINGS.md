@@ -74,7 +74,7 @@ This is a set of recomendations and guidelines for binding authors, meant to hel
 | [raylib_mojo](https://github.com/willGuimont/raylib_mojo)                                | **6.0**          | [Mojo](https://www.modular.com/mojo)                                    | ZLib                 |
 | [raymojo](https://github.com/RobertFlexx/raymojo)                                        | **6.0**          | [Mojo](https://www.modular.com/mojo)                                    | GPLv3                |
 | [raymod](https://github.com/RobertFlexx/raymod)                                          | **6.0**          | [Modula-2](https://en.wikipedia.org/wiki/Modula-2) / [Modula-3](https://en.wikipedia.org/wiki/Modula-3) | Apache-2.0 |
-| [Raylib.nelua](https://github.com/AuzFox/Raylib.nelua)                                   | **5.5**          | [nelua](https://nelua.io)                                               | Zlib                 |
+| [Raylib.nelua](https://github.com/AuzFox/Raylib.nelua)                                   | 6.1-dev          | [nelua](https://nelua.io)                                               | Zlib                 |
 | [raylib-bindings](https://github.com/vaiorabbit/raylib-bindings)                         | 6.1-dev          | [Ruby](https://www.ruby-lang.org/en)                                    | Zlib                 |
 | [node-raylib](https://github.com/RobLoach/node-raylib)                                   | 5.5              | [Node.js](https://nodejs.org/en)                                        | Zlib                 |
 | [raylib-odin](https://github.com/odin-lang/Odin/tree/master/vendor/raylib)               | **6.0**          | [Odin](https://odin-lang.org)                                           | Zlib                 |
@@ -123,7 +123,8 @@ This is a set of recomendations and guidelines for binding authors, meant to hel
 | [fnl-raylib](https://github.com/0riginaln0/fnl-raylib)                                   | **5.5**          | [Fennel](https://fennel-lang.org/)                                      | MIT                  |
 | [Rayua](https://github.com/uiua-lang/rayua)                                              | **5.5**          | [Uiua](https://www.uiua.org/)                                           | **???**              |
 | [Target](https://github.com/FinnDemonCat/Target/tree/main/lib/raylib)                    | **5.5**          | [Dart](https://dart.dev/)                                               | Apache-2.0 license   |
-| [mach-raylib](https://github.com/angluca/mach-raylib)                                    | **6.0-dev**      | [Mach](https://machlang.org/)                                           | MIT                  |
+| [mach-raylib](https://github.com/angluca/mach-raylib)                                    | **6.x-dev**      | [Mach](https://machlang.org/)                                           | MIT                  |
+| [gcl native raylib module](https://github.com/gnuchanos/GnuchanOS/tree/main/language)    | **6.0**          | [gclang](https://github.com/gnuchanos/GnuchanOS/tree/main/language)     | GPLv3                |
 
 
 ### Utility Wrappers
@@ -211,7 +212,7 @@ These are older raylib bindings that are more than 2 versions old or have not be
 | [raylib-beef](https://github.com/M0n7y5/raylib-beef)                                     | 3.0              | [Beef](https://www.beeflang.org)                                        |
 | [raylib-never](https://github.com/never-lang/raylib-never)                               | 3.0              | [Never](https://github.com/never-lang/never)                            |
 | [raylib.cbl](https://github.com/Martinfx/Cobol/tree/master/OpenCobol/Games/raylib)       | 2.0              | [COBOL](https://en.wikipedia.org/wiki/COBOL)                            |
-| [gclang-raylib](https://github.com/gnuchanos/gcLang_Compiler/tree/main/windows_version/raylib_version)| **6.0** | [gclang](https://github.com/gnuchanos/gcLang_Compiler)              |
+
 
 Missing some language or wrapper? Feel free to create a new one! :)
 
