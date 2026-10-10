@@ -14,6 +14,8 @@ To use a prebuilt library instead, the stable releases of this repository (`6.0.
 
   Don't remove the key: on iOS 26 and earlier an app that declares no launch screen at all falls back to a reduced compatibility window instead of the full screen. iOS 27 doesn't apply that fallback, so the damage is invisible there.
 
+- **Support every orientation.** The iPad list is `INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad` (all four), which generates `UISupportedInterfaceOrientations~ipad`; the shared `INFOPLIST_KEY_UISupportedInterfaceOrientations` keeps the iPhone list at three. Rotating an iPad to an orientation the app doesn't declare makes UIKit log `Conversion error!` for a degenerate rect conversion while the rotation is refused, and iOS announces that all orientations will soon be required. That requirement is about the resizable scene, not about iPhone: the three-orientation list is fine there, and in a resizable environment the declared orientations are only a preference (an iPhone app in iPhone Mirroring stays in portrait), so a layout follows size classes, not the orientation.
+
 - **Adopt the scene life cycle.** An app linked against the iOS 27 SDK that doesn't is killed at launch by a UIKit assert, and only when the runtime is iOS 27 as well - a binary built with an older SDK keeps running. `rcore_ios.c` creates the window in a `SceneDelegate`, without declaring `UIApplicationSceneManifest` in the plist. See [Transitioning to the UIKit scene-based life cycle](https://developer.apple.com/documentation/uikit/transitioning-to-the-uikit-scene-based-life-cycle).
 
 `ios_ready()` runs once per app launch and `ios_destroy()` once at termination: nothing tears the window down in between, and no other callback should.
