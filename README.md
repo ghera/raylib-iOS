@@ -12,14 +12,14 @@ This fork is **not affiliated with the official raylib project**.
 
 - Maintains both the stable branch (`release/*`) and the master branch, updated monthly from upstream.
 
-## Releases
+### Releases
 
 Every release attaches a `raylib-ios-xcframeworks-<tag>.zip` (`6.0.2-iOS` and later) with the three frameworks needed to link the library without the sources:
 
 - `raylib.xcframework` — device (`ios-arm64`) and simulator (`arm64` + `x86_64`), deployment target **iOS 15.6**;
 - `libEGL.xcframework` and `libGLESv2.xcframework` — the ANGLE build this fork renders through (Metal under the hood), taken from `deps/ANGLE` and not rebuilt by the workflow.
 
-They are built with the Xcode 27 runner image by [`.github/workflows/ios-xcframework-release.yml`](.github/workflows/ios-xcframework-release.yml); `projects/Xcode27/README.md` explains how to drop them into a target.
+They are built on the Xcode 27 runner image by [`.github/workflows/ios-xcframework-release.yml`](.github/workflows/ios-xcframework-release.yml); `projects/Xcode27/README.md` explains how to drop them into a target.
 
 ## iOS caveats
 
@@ -65,9 +65,9 @@ Upstream raylib has an open PR, [#5881](https://github.com/raysan5/raylib/pull/5
 
 This fork takes the opposite one: everything on the main thread driven by `CADisplayLink`, with `ios_ready()` / `ios_update()` / `ios_destroy()` as the only entry points, and rendering through EGL/ANGLE so that OpenGL ES runs on Metal. It is the approach of the original [#3880](https://github.com/raysan5/raylib/pull/3880). I don't agree with the upstream technical solution, so this fork keeps being maintained as long as I use it in my own projects.
 
-## Projects using this fork
+## Released games using this fork
 
-[PatchWall](https://apps.apple.com/app/id6754010105) — a strategic colour puzzle game about thinking ahead, no timers and no distractions: [App Store](https://apps.apple.com/app/id6754010105) · [Google Play](https://play.google.com/store/apps/details?id=it.felixstudio.patchwall). Its iOS build is what this fork is developed against (the App Store listing requires iOS 15.6, the same deployment target as this repo): the platform code goes through there on real devices, which is why the fork keeps being updated.
+**PatchWall** - a color puzzle game about thinking ahead. [App Store](https://apps.apple.com/app/id6754010105) / [Google Play](https://play.google.com/store/apps/details?id=it.felixstudio.patchwall)
 
 ## Credits
 
