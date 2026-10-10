@@ -6,16 +6,20 @@ This fork is **not affiliated with the official raylib project**.
 
 ## What is different from upstream
 
-- Adds an iOS `rcore` implementation in `platform/rcore_ios.c`,
-  originally based on work proposed in PR [#3880](https://github.com/raysan5/raylib/pull/3880)
-  by [blueloveTH](https://github.com/blueloveTH);
-  
-- Includes an example project in `projects/Xcode26` that ships with a ready-to-use
-  Apple Silicon ANGLE build, updated monthly from Chromium stable.
-  For custom ANGLE builds, see: https://github.com/ghera/ANGLE-iOS;
+- Adds an iOS `rcore` implementation in `platform/rcore_ios.c`, originally based on work proposed in PR [#3880](https://github.com/raysan5/raylib/pull/3880) by [blueloveTH](https://github.com/blueloveTH);
 
-- Maintains both the stable branch (`release/5.5`) and the master branch,
-  updated monthly from upstream.
+- Includes an example project in `projects/Xcode27` that ships with a ready-to-use Apple Silicon ANGLE build, updated monthly from Chromium stable. For custom ANGLE builds, see: https://github.com/ghera/ANGLE-iOS;
+
+- Maintains both the stable branch (`release/*`) and the master branch, updated monthly from upstream.
+
+### Releases
+
+Every release attaches a `raylib-ios-xcframeworks-<tag>.zip` (`6.0.2-iOS` and later) with the three frameworks needed to link the library without the sources:
+
+- `raylib.xcframework` — device (`ios-arm64`) and simulator (`arm64` + `x86_64`), deployment target **iOS 15.6**;
+- `libEGL.xcframework` and `libGLESv2.xcframework` — the ANGLE build this fork renders through (Metal under the hood), taken from `deps/ANGLE` and not rebuilt by the workflow.
+
+They are built on the Xcode 27 runner image by [`.github/workflows/ios-xcframework-release.yml`](.github/workflows/ios-xcframework-release.yml); `projects/Xcode27/README.md` explains how to drop them into a target.
 
 ## iOS caveats
 
@@ -55,10 +59,15 @@ where `ios_ready()`, `ios_update()` and `ios_destroy()` are lifecycle callbacks 
 
 I tried many raylib original examples and they all work flawlessly with this simple approach.
 
-## Status
+### Upstream direction
 
-This fork is intended for experimental and personal use.
-It is **not production-ready**.
+Upstream raylib has an open PR, [#5881](https://github.com/raysan5/raylib/pull/5881), adding iOS support with a different approach: EAGL / `CAEAGLLayer` / OpenGL ES, deprecated by Apple since iOS 12, and the desktop `while (!WindowShouldClose())` loop kept alive on a background thread. That direction is the one the raylib author prefers, because `main()` stays identical on every platform.
+
+This fork takes the opposite one: everything on the main thread driven by `CADisplayLink`, with `ios_ready()` / `ios_update()` / `ios_destroy()` as the only entry points, and rendering through EGL/ANGLE so that OpenGL ES runs on Metal. It is the approach of the original [#3880](https://github.com/raysan5/raylib/pull/3880). I don't agree with the upstream technical solution, so this fork keeps being maintained as long as I use it in my own projects.
+
+## Released games using this fork
+
+**PatchWall** - a color puzzle game about thinking ahead. [App Store](https://apps.apple.com/app/id6754010105) / [Google Play](https://play.google.com/store/apps/details?id=it.felixstudio.patchwall)
 
 ## Credits
 

@@ -25,23 +25,29 @@ concurrency:
 jobs:
   build-ios-xcframeworks:
     name: Build iOS XCFrameworks
-    runs-on: macos-26
+    # Xcode 27 ships in its own image: the macos-26 one only carries the 26.x line
+    runs-on: xcode-27
 
     steps:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Show toolchain
+      - name: Check toolchain
         run: |
           sw_vers
           xcodebuild -version
           xcrun --sdk iphoneos --show-sdk-path
           xcrun --sdk iphonesimulator --show-sdk-path
+          # The image is a public preview and the label can change: fail loudly instead of
+          # shipping an xcframework built with an older SDK
+          test "$(xcodebuild -version | head -1 | awk '{print $2}' | cut -d. -f1)" = "27"
 
       - name: Build raylib XCFramework
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag_name || github.ref_name }}
         run: |
           mkdir -p dist
-          bash projects/scripts/build-ios-xcframework.sh "$PWD/dist/raylib.xcframework"
+          bash projects/scripts/build-ios-xcframework.sh "$PWD/dist/raylib.xcframework" "$RELEASE_TAG"
 
       - name: Verify package inputs
         run: |

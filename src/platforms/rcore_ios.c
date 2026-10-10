@@ -64,6 +64,11 @@ extern void ios_destroy();
 // MARK: - AppDelegate interface
 
 @interface AppDelegate : UIResponder <UIApplicationDelegate>
+@end
+
+// MARK: - SceneDelegate interface
+
+@interface SceneDelegate : UIResponder <UIWindowSceneDelegate>
 @property(strong, nonatomic) UIWindow* window;
 @end
 
@@ -283,7 +288,7 @@ Vector2 GetWindowPosition(void) {
 
 // Get window scale DPI factor for current monitor
 Vector2 GetWindowScaleDPI(void) {
-    CGFloat scale = [[UIScreen mainScreen] nativeScale];
+    CGFloat scale = platform.viewController.view.window.windowScene.screen.nativeScale;
     return (Vector2){scale, scale};
 }
 
@@ -457,7 +462,7 @@ void PollInputEvents(void) {
 // Module Internal Functions Definition
 //----------------------------------------------------------------------------------
 
-void SetupWindowSizes(int width, int height) {
+static void SetupWindowSizes(int width, int height) {
     Vector2 scale = GetWindowScaleDPI();
     CORE.Window.screen.width = width;
     CORE.Window.screen.height = height;
@@ -536,6 +541,8 @@ int InitPlatform(void) {
 
     // eglCreateWindowSurface(platform.device, platform.config, platform.app->window, NULL);
     // bridged cast rootViewController.view.layer; to void*
+    // Layer pixel density, same source as the render size computed by GetWindowScaleDPI()
+    platform.viewController.view.contentScaleFactor = GetWindowScaleDPI().x;
     void* native_window = (__bridge void*)platform.viewController.view.layer;
     platform.surface = eglCreateWindowSurface(platform.device, platform.config, native_window, NULL);
 
@@ -546,7 +553,8 @@ int InitPlatform(void) {
         TRACELOG(LOG_WARNING, "DISPLAY: Failed to attach EGL rendering context to EGL surface");
         return -1;
     } else {
-        CGSize screenSize = [[UIScreen mainScreen] bounds].size;
+        // View size, not screen size: still correct if the scene is smaller than the screen
+        CGSize screenSize = platform.viewController.view.bounds.size;
         SetupWindowSizes(screenSize.width, screenSize.height);
 
         TRACELOG(LOG_INFO, "DISPLAY: Device initialized successfully");
@@ -605,12 +613,38 @@ void ClosePlatform(void) {
     }
 }
 
-void RecreatePlatformSurface(void* layer, int width, int height) {
+static void RecreatePlatformSurface(void* layer, int width, int height, bool isInteractivelyResizing) {
+    // A transition can report a zero-sized view: SetupWindowSizes(0, 0) would zero the render size
+    if ((width <= 0) || (height <= 0)) return;
+
+    UIView* view = platform.viewController.view;
+    
+    if (isInteractivelyResizing) {
+        // Stretch the presentation instead of recreating the surface
+        CGSize canvas = CGSizeMake(CORE.Window.screen.width, CORE.Window.screen.height);
+        if ((canvas.width > 0) && (canvas.height > 0)) {
+            view.transform = CGAffineTransformMakeScale(width/canvas.width, height/canvas.height);
+            view.bounds = CGRectMake(0, 0, canvas.width, canvas.height);
+            view.center = CGPointMake(width/2.0, height/2.0);
+        }
+
+        return;
+    }
+
+    view.transform = CGAffineTransformIdentity;
+    view.bounds = CGRectMake(0, 0, width, height);
+    view.center = CGPointMake(width/2.0, height/2.0);
+
     if (platform.surface != EGL_NO_SURFACE) {
         eglDestroySurface(platform.device, platform.surface);
     }
 
     platform.surface = eglCreateWindowSurface(platform.device, platform.config, layer, NULL);
+    if (platform.surface == EGL_NO_SURFACE) {
+        TRACELOG(LOG_WARNING, "DISPLAY: Failed to recreate EGL surface (%d x %d)", width, height);
+        return;
+    }
+
     eglMakeCurrent(platform.device, platform.surface, platform.surface, platform.context);
 
     SetupWindowSizes(width, height);
@@ -631,15 +665,17 @@ void RecreatePlatformSurface(void* layer, int width, int height) {
     // self.modalPresentationCapturesStatusBarAppearance = true;
     platform.viewController = self;
     self.view.multipleTouchEnabled = true;
-    self.view.contentScaleFactor = [[UIScreen mainScreen] nativeScale];
     [self setNeedsUpdateOfScreenEdgesDeferringSystemGestures];
 }
 
 - (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
     [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
-    
+    // iOS 26 and later goes through the scene delegate, which also reports the interaction state
+    if (@available(iOS 26.0, *)) return;
+
     [coordinator animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext> context) {
-      RecreatePlatformSurface((__bridge void*)self.view.layer, (int)size.width, (int)size.height);
+        // No interaction state to read before iOS 26: the game is notified of every size change
+        RecreatePlatformSurface((__bridge void*)self.view.layer, (int)size.width, (int)size.height, false);
     } completion:nil];
 }
 
@@ -664,6 +700,8 @@ void RecreatePlatformSurface(void* layer, int width, int height) {
 
 static void SyncAllTouches(UIEvent* event) {
     CORE.Input.Touch.pointCount = (int)event.allTouches.count;
+    if (CORE.Input.Touch.pointCount > MAX_TOUCH_POINTS) CORE.Input.Touch.pointCount = MAX_TOUCH_POINTS;
+
     int i = 0;
     for (UITouch* touch in event.allTouches) {
         CGPoint location = [touch locationInView:platform.viewController.view];
@@ -703,7 +741,7 @@ static void SendGestureEvent(NSSet<UITouch*>* touches, int action) {
     ProcessGestureEvent(gestureEvent);
 #endif
 
-    if (action == TOUCH_ACTION_UP) {
+    if ((action == TOUCH_ACTION_UP) || (action == TOUCH_ACTION_CANCEL)) {
         // One of the touchpoints is released, remove it from touch point arrays
         for (UITouch* touch in touches) {
             int size = CORE.Input.Touch.pointCount;
@@ -716,6 +754,9 @@ static void SendGestureEvent(NSSet<UITouch*>* touches, int action) {
                     CORE.Input.Touch.position[j] = CORE.Input.Touch.position[j + 1];
                 }
                 CORE.Input.Touch.pointCount--;
+
+                CORE.Input.Touch.pointId[CORE.Input.Touch.pointCount] = 0;
+                CORE.Input.Touch.position[CORE.Input.Touch.pointCount] = (Vector2){ -1.0f, -1.0f };
             } else {
                 TRACELOG(LOG_WARNING, "Touch point not found. This may be a bug!");
             }
@@ -762,38 +803,50 @@ static void SendGestureEvent(NSSet<UITouch*>* touches, int action) {
 
 @end
 
-// MARK: - AppDelegate implementation
+// MARK: - SceneDelegate implementation
 
-@implementation AppDelegate
+@implementation SceneDelegate
 
-- (BOOL)application:(UIApplication*)application didFinishLaunchingWithOptions:(NSDictionary*)launchOptions {
-    // Override point for customization after application launch.
-    self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+- (void)windowScene:(UIWindowScene*)windowScene didUpdateEffectiveGeometry:(UIWindowSceneGeometry*)previousEffectiveGeometry API_AVAILABLE(ios(26.0)) {
+    if (!CORE.Window.ready) return;
+
+    CGSize size = windowScene.effectiveGeometry.coordinateSpace.bounds.size;
+    RecreatePlatformSurface((__bridge void*)platform.viewController.view.layer, (int)size.width, (int)size.height, windowScene.effectiveGeometry.isInteractivelyResizing);
+}
+
+- (void)scene:(UIScene*)scene willConnectToSession:(UISceneSession*)session options:(UISceneConnectionOptions*)connectionOptions {
+    // Single fullscreen window: ignore other roles (external display) so the system keeps mirroring
+    if (![session.role isEqualToString:UIWindowSceneSessionRoleApplication]) return;
+
+    self.window = [[UIWindow alloc] initWithWindowScene:(UIWindowScene*)scene];
     self.window.rootViewController = [[GameViewController alloc] init];
     [self.window makeKeyAndVisible];
     ios_ready();
     CADisplayLink* displayLink = [CADisplayLink displayLinkWithTarget:self.window.rootViewController selector:@selector(update)];
     [displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-    return YES;
 }
 
-- (void)applicationWillResignActive:(UIApplication*)application {
-    // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
-    // Use this method to pause ongoing tasks, disable timers, and invalidate graphics rendering callbacks. Games should use this method to pause the game.
+- (void)sceneWillResignActive:(UIScene*)scene {
+    // Use this method to pause ongoing tasks, disable timers, and invalidate graphics rendering callbacks.
     CORE.Window.flags |= FLAG_WINDOW_UNFOCUSED;
 }
 
-- (void)applicationDidBecomeActive:(UIApplication*)application {
-    // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
+- (void)sceneDidBecomeActive:(UIScene*)scene {
     CORE.Window.flags &= ~FLAG_WINDOW_UNFOCUSED;
 }
 
-- (void)applicationDidEnterBackground:(UIApplication*)application {
-    // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
-}
+@end
 
-- (void)applicationWillEnterForeground:(UIApplication*)application {
-    // Called as part of the transition from the background to the active state; here you can undo many of the changes made on entering the background.
+// MARK: - AppDelegate implementation
+
+@implementation AppDelegate
+
+// Scene configuration, since the app declares no UIApplicationSceneManifest in Info.plist
+- (UISceneConfiguration*)application:(UIApplication*)application configurationForConnectingSceneSession:(UISceneSession*)connectingSceneSession options:(UISceneConnectionOptions*)options {
+    UISceneConfiguration* configuration = [UISceneConfiguration configurationWithName:@"Default Configuration" sessionRole:connectingSceneSession.role];
+    configuration.sceneClass = [UIWindowScene class];
+    configuration.delegateClass = [SceneDelegate class];
+    return configuration;
 }
 
 - (void)applicationWillTerminate:(UIApplication*)application {
