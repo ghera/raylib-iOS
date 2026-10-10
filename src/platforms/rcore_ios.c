@@ -614,9 +614,27 @@ void ClosePlatform(void) {
     }
 }
 
-static void RecreatePlatformSurface(void* layer, int width, int height) {
+static void RecreatePlatformSurface(void* layer, int width, int height, bool isInteractivelyResizing) {
     // A transition can report a zero-sized view: SetupWindowSizes(0, 0) would zero the render size
     if ((width <= 0) || (height <= 0)) return;
+
+    UIView* view = platform.viewController.view;
+    
+    if (isInteractivelyResizing) {
+        // Stretch the presentation instead of recreating the surface
+        CGSize canvas = CGSizeMake(CORE.Window.screen.width, CORE.Window.screen.height);
+        if ((canvas.width > 0) && (canvas.height > 0)) {
+            view.transform = CGAffineTransformMakeScale(width/canvas.width, height/canvas.height);
+            view.bounds = CGRectMake(0, 0, canvas.width, canvas.height);
+            view.center = CGPointMake(width/2.0, height/2.0);
+        }
+
+        return;
+    }
+
+    view.transform = CGAffineTransformIdentity;
+    view.bounds = CGRectMake(0, 0, width, height);
+    view.center = CGPointMake(width/2.0, height/2.0);
 
     if (platform.surface != EGL_NO_SURFACE) {
         eglDestroySurface(platform.device, platform.surface);
@@ -653,9 +671,12 @@ static void RecreatePlatformSurface(void* layer, int width, int height) {
 
 - (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
     [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
-    
+    // iOS 26 and later goes through the scene delegate, which also reports the interaction state
+    if (@available(iOS 26.0, *)) return;
+
     [coordinator animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext> context) {
-      RecreatePlatformSurface((__bridge void*)self.view.layer, (int)size.width, (int)size.height);
+        // No interaction state to read before iOS 26: the game is notified of every size change
+        RecreatePlatformSurface((__bridge void*)self.view.layer, (int)size.width, (int)size.height, false);
     } completion:nil];
 }
 
@@ -784,6 +805,13 @@ static void SendGestureEvent(NSSet<UITouch*>* touches, int action) {
 // MARK: - SceneDelegate implementation
 
 @implementation SceneDelegate
+
+- (void)windowScene:(UIWindowScene*)windowScene didUpdateEffectiveGeometry:(UIWindowSceneGeometry*)previousEffectiveGeometry API_AVAILABLE(ios(26.0)) {
+    if (!CORE.Window.ready) return;
+
+    CGSize size = windowScene.effectiveGeometry.coordinateSpace.bounds.size;
+    RecreatePlatformSurface((__bridge void*)platform.viewController.view.layer, (int)size.width, (int)size.height, windowScene.effectiveGeometry.isInteractivelyResizing);
+}
 
 - (void)scene:(UIScene*)scene willConnectToSession:(UISceneSession*)session options:(UISceneConnectionOptions*)connectionOptions {
     // Single fullscreen window: ignore other roles (external display) so the system keeps mirroring

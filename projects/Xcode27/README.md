@@ -18,4 +18,6 @@ To use a prebuilt library instead, the stable releases of this repository (`6.0.
 
 - **Adopt the scene life cycle.** An app linked against the iOS 27 SDK that doesn't is killed at launch by a UIKit assert, and only when the runtime is iOS 27 as well - a binary built with an older SDK keeps running. `rcore_ios.c` creates the window in a `SceneDelegate`, without declaring `UIApplicationSceneManifest` in the plist. See [Transitioning to the UIKit scene-based life cycle](https://developer.apple.com/documentation/uikit/transitioning-to-the-uikit-scene-based-life-cycle).
 
+- **Handle a resizable scene.** `UIRequiresFullScreen` is deprecated and logged a "will soon be ignored" warning at launch, so it is gone. During an interactive drag nothing is recomputed, as Apple recommends for games: `RecreatePlatformSurface()` keeps the surface size and stretches the presentation, while the scene delegate reports the interaction state and the new size is applied when the interaction ends.
+
 `ios_ready()` runs once per app launch and `ios_destroy()` once at termination: nothing tears the window down in between, and no other callback should.
