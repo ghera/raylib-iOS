@@ -5,7 +5,9 @@
 #
 #   Slices: ios-arm64 (device), ios-arm64-sim, ios-x86_64-sim (simulator)
 #
-#   Usage: ./build-ios-xcframework.sh [output_dir]
+#   Usage: ./build-ios-xcframework.sh [output_dir] [version]
+#     version: release tag, e.g. 6.0.6-iOS -> 6.0.6, written into CFBundleShortVersionString
+#              (default: the version in src/raylib.h)
 #     Default output: ../../raylib.xcframework  (project root)
 #
 #   Prerequisites: macOS + Xcode 15+
@@ -26,6 +28,9 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 RAYLIB_SRC="$(cd "$SCRIPT_DIR/../../src" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 OUTPUT_DIR="${1:-$PROJECT_ROOT/raylib.xcframework}"
+
+VERSION="$(printf '%s' "${2:-}" | grep -oE '^[0-9]+(\.[0-9]+)*' || true)"
+[[ -z "$VERSION" ]] && VERSION="$(grep -m1 '^#define RAYLIB_VERSION ' "$RAYLIB_SRC/raylib.h" | cut -d'"' -f2)"
 
 DEPLOYMENT_TARGET=15.6
 
@@ -117,7 +122,7 @@ build_slice() {
     <key>CFBundleInfoDictionaryVersion</key><string>6.0</string>
     <key>CFBundleName</key><string>raylib</string>
     <key>CFBundlePackageType</key><string>FMWK</string>
-    <key>CFBundleShortVersionString</key><string>6.0</string>
+    <key>CFBundleShortVersionString</key><string>$VERSION</string>
     <key>CFBundleVersion</key><string>1</string>
     <key>MinimumOSVersion</key><string>$DEPLOYMENT_TARGET</string>
 </dict>
@@ -133,6 +138,7 @@ echo "=== raylib iOS XCFramework ==="
 echo "  src:   $RAYLIB_SRC"
 echo "  out:   $OUTPUT_DIR"
 echo "  minOS: $DEPLOYMENT_TARGET"
+echo "  ver:   $VERSION"
 echo ""
 
 BUILD_DIR=$(mktemp -d)
