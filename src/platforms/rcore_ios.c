@@ -464,7 +464,7 @@ void PollInputEvents(void) {
 // Module Internal Functions Definition
 //----------------------------------------------------------------------------------
 
-void SetupWindowSizes(int width, int height) {
+static void SetupWindowSizes(int width, int height) {
     Vector2 scale = GetWindowScaleDPI();
     CORE.Window.screen.width = width;
     CORE.Window.screen.height = height;
@@ -614,12 +614,20 @@ void ClosePlatform(void) {
     }
 }
 
-void RecreatePlatformSurface(void* layer, int width, int height) {
+static void RecreatePlatformSurface(void* layer, int width, int height) {
+    // A transition can report a zero-sized view: SetupWindowSizes(0, 0) would zero the render size
+    if ((width <= 0) || (height <= 0)) return;
+
     if (platform.surface != EGL_NO_SURFACE) {
         eglDestroySurface(platform.device, platform.surface);
     }
 
     platform.surface = eglCreateWindowSurface(platform.device, platform.config, layer, NULL);
+    if (platform.surface == EGL_NO_SURFACE) {
+        TRACELOG(LOG_WARNING, "DISPLAY: Failed to recreate EGL surface (%d x %d)", width, height);
+        return;
+    }
+
     eglMakeCurrent(platform.device, platform.surface, platform.surface, platform.context);
 
     SetupWindowSizes(width, height);
