@@ -680,6 +680,8 @@ static void RecreatePlatformSurface(void* layer, int width, int height) {
 
 static void SyncAllTouches(UIEvent* event) {
     CORE.Input.Touch.pointCount = (int)event.allTouches.count;
+    if (CORE.Input.Touch.pointCount > MAX_TOUCH_POINTS) CORE.Input.Touch.pointCount = MAX_TOUCH_POINTS;
+
     int i = 0;
     for (UITouch* touch in event.allTouches) {
         CGPoint location = [touch locationInView:platform.viewController.view];
@@ -717,7 +719,7 @@ static void SendGestureEvent(NSSet<UITouch*>* touches, int action) {
     ProcessGestureEvent(gestureEvent);
 #endif
 
-    if (action == TOUCH_ACTION_UP) {
+    if ((action == TOUCH_ACTION_UP) || (action == TOUCH_ACTION_CANCEL)) {
         // One of the touchpoints is released, remove it from touch point arrays
         for (UITouch* touch in touches) {
             int size = CORE.Input.Touch.pointCount;
@@ -730,6 +732,9 @@ static void SendGestureEvent(NSSet<UITouch*>* touches, int action) {
                     CORE.Input.Touch.position[j] = CORE.Input.Touch.position[j + 1];
                 }
                 CORE.Input.Touch.pointCount--;
+
+                CORE.Input.Touch.pointId[CORE.Input.Touch.pointCount] = 0;
+                CORE.Input.Touch.position[CORE.Input.Touch.pointCount] = (Vector2){ -1.0f, -1.0f };
             } else {
                 TRACELOG(LOG_WARNING, "Touch point not found. This may be a bug!");
             }
