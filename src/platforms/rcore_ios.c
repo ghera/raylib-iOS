@@ -755,8 +755,9 @@ static void SendGestureEvent(NSSet<UITouch*>* touches, int action) {
                 }
                 CORE.Input.Touch.pointCount--;
 
-                CORE.Input.Touch.pointId[CORE.Input.Touch.pointCount] = 0;
-                CORE.Input.Touch.position[CORE.Input.Touch.pointCount] = (Vector2){ -1.0f, -1.0f };
+                // Clear the vacated id: MapPointId() scans the whole array, not only pointCount
+                CORE.Input.Touch.pointId[CORE.Input.Touch.pointCount] = -1;
+                // NOTE: position[] is NOT cleared here on purpose: it feeds Mouse.currentPosition below
             } else {
                 TRACELOG(LOG_WARNING, "Touch point not found. This may be a bug!");
             }
