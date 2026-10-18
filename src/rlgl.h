@@ -223,14 +223,6 @@
     #define RL_DEFAULT_BATCH_MAX_TEXTURE_UNITS       4      // Maximum number of textures units that can be activated on batch drawing (SetShaderValueTexture())
 #endif
 
-#ifndef RLGL_ENABLE_GLES_DEFAULT_HIGHP_PRECISION
-    // Enable high precision floats in the default GLES shaders.
-    // Useful on some mobile GPUs/drivers where mediump causes visible 2D shape artifacts.
-    // Define RLGL_ENABLE_GLES_DEFAULT_HIGHP_PRECISION as 1 before including rlgl.h
-    // or pass it from the build system, e.g. -DRLGL_ENABLE_GLES_DEFAULT_HIGHP_PRECISION=1.
-    #define RLGL_ENABLE_GLES_DEFAULT_HIGHP_PRECISION 0
-#endif
-
 // Internal Matrix stack
 #ifndef RL_MAX_MATRIX_STACK_SIZE
     #define RL_MAX_MATRIX_STACK_SIZE                32      // Maximum size of Matrix stack
