@@ -38,8 +38,8 @@ jobs:
           xcodebuild -version
           xcrun --sdk iphoneos --show-sdk-path
           xcrun --sdk iphonesimulator --show-sdk-path
-          # The image is a public preview and the label can change: fail loudly instead of
-          # shipping an xcframework built with an older SDK
+          # `xcode-27` is GA, but it only guarantees the 27.x toolchain: fail loudly instead
+          # of shipping an xcframework built with an older SDK
           test "$(xcodebuild -version | head -1 | awk '{print $2}' | cut -d. -f1)" = "27"
 
       - name: Build raylib XCFramework
