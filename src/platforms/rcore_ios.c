@@ -635,6 +635,14 @@ static void RecreatePlatformSurface(void* layer, int width, int height, bool isI
     view.bounds = CGRectMake(0, 0, width, height);
     view.center = CGPointMake(width/2.0, height/2.0);
 
+    // The display's scale is a trait, not a constant: it belongs to whichever screen the
+    // scene is on (a different panel after a fold, an external display) and can differ
+    // from the one this view was created with in InitPlatform. The layer's drawable
+    // follows contentScaleFactor, so it is refreshed together with the bounds -- else the
+    // surface is rendered at the old density (blurry, and misplaced once the size differs).
+    CGFloat scale = GetWindowScaleDPI().x;
+    if (scale > 0.0) view.contentScaleFactor = scale;
+
     if (platform.surface != EGL_NO_SURFACE) {
         eglDestroySurface(platform.device, platform.surface);
     }
