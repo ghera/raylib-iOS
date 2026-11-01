@@ -618,7 +618,13 @@ static void RecreatePlatformSurface(void* layer, int width, int height, bool isI
     if ((width <= 0) || (height <= 0)) return;
 
     UIView* view = platform.viewController.view;
-    
+
+    // Ours to size on iOS 26 and later, where a scene resizes without the system resizing its window;
+    // below that UIKit owns the frame and animates it through a rotation. The view's placement and the
+    // safe area both live in this space: a stale window pins the content to its own corner and keeps the
+    // launch insets, which is how the bottom row ends up past the render pass.
+    if (@available(iOS 26.0, *)) view.window.frame = CGRectMake(0, 0, width, height);
+
     if (isInteractivelyResizing) {
         // Stretch the presentation instead of recreating the surface
         CGSize canvas = CGSizeMake(CORE.Window.screen.width, CORE.Window.screen.height);
@@ -632,8 +638,15 @@ static void RecreatePlatformSurface(void* layer, int width, int height, bool isI
     }
 
     view.transform = CGAffineTransformIdentity;
-    view.bounds = CGRectMake(0, 0, width, height);
-    view.center = CGPointMake(width/2.0, height/2.0);
+    view.frame = CGRectMake(0, 0, width, height);
+
+    // The display's scale is a trait, not a constant: it belongs to whichever screen the
+    // scene is on (a different panel after a fold, an external display) and can differ
+    // from the one this view was created with in InitPlatform. The layer's drawable
+    // follows contentScaleFactor, so it is refreshed together with the bounds -- else the
+    // surface is rendered at the old density (blurry, and misplaced once the size differs).
+    CGFloat scale = GetWindowScaleDPI().x;
+    if (scale > 0.0) view.contentScaleFactor = scale;
 
     if (platform.surface != EGL_NO_SURFACE) {
         eglDestroySurface(platform.device, platform.surface);
