@@ -9,7 +9,7 @@ extern "C" const char* GetIOSDocumentsPath() {
 
     if (!documentsPath) {
         NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-        documentsPath = [paths firstObject];
+        documentsPath = [[paths firstObject] copy];
         cPath = [documentsPath UTF8String];
     }
     return cPath;
