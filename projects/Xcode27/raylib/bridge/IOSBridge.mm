@@ -15,6 +15,30 @@ extern "C" const char* GetIOSDocumentsPath() {
     return cPath;
 }
 
+extern "C" void InstallBackgroundHook(void (*callback)(bool focused))
+{
+    static bool installed = false;
+    if (installed) {
+        return;
+    }
+    installed = true;
+
+    /* Works with scenes too: UIKit still posts the app-level notifications, and
+       raylib's SceneDelegate consumes the first edge by simply not calling the
+       game any more -- which is exactly why the game cannot see it. One callback
+       with a boolean, the same shape as the engine's own focus handling. */
+    [NSNotificationCenter.defaultCenter
+        addObserverForName:UIApplicationWillResignActiveNotification
+                    object:nil
+                     queue:nil
+                usingBlock:^(NSNotification *notification) { callback(false); }];
+    [NSNotificationCenter.defaultCenter
+        addObserverForName:UIApplicationDidBecomeActiveNotification
+                    object:nil
+                     queue:nil
+                usingBlock:^(NSNotification *notification) { callback(true); }];
+}
+
 extern "C" const SafeAreaInsets GetIOSSafeAreaInsets() {
     UIWindow *window = nil;
 
