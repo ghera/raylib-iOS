@@ -843,6 +843,12 @@ static void SendGestureEvent(NSSet<UITouch*>* touches, int action) {
 - (void)sceneWillResignActive:(UIScene*)scene {
     // Use this method to pause ongoing tasks, disable timers, and invalidate graphics rendering callbacks.
     CORE.Window.flags |= FLAG_WINDOW_UNFOCUSED;
+
+    // The display link is gated on this very flag, so no frame would ever see the app
+    // leaving. Grant one here, while the surface is still alive: inside it
+    // IsWindowFocused() is already false, which is where the game pauses and paints
+    // what the OS snapshots (background, control centre, incoming call).
+    if (CORE.Window.ready) ios_update(false);
 }
 
 - (void)sceneDidBecomeActive:(UIScene*)scene {

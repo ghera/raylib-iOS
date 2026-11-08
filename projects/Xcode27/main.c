@@ -34,6 +34,7 @@ int gesturesCount = 0;
 char gestureStrings[100][32];
 int currentGesture = GESTURE_NONE;
 int lastGesture = GESTURE_NONE;
+bool wasFocused = true;
 
 static void add_log_text(const char* title) {
     if (gesturesCount >= maxGestureStrings) {
@@ -77,6 +78,15 @@ static void update(bool viewSizeChanged) {
         update_screen_layout();
         add_log_text(TextFormat("ViewSizeChanged %d x %d", GetMonitorWidth(0), GetMonitorHeight(0)));
     }
+
+    // Focus: on both mobile backends the engine grants one frame after the app resigns
+    // active, and IsWindowFocused() is already false inside it -- that frame is where a
+    // game pauses and paints what the OS snapshots. On desktop the loop keeps running
+    // and the same two lines work, so there is one code path for every platform.
+    bool focused = IsWindowFocused();
+    if (!focused) add_log_text("APP RESIGNED - PAUSED");
+    else if (!wasFocused) add_log_text("APP RESUMED");
+    wasFocused = focused;
 
     lastGesture = currentGesture;
     currentGesture = GetGestureDetected();
@@ -154,7 +164,14 @@ static void update(bool viewSizeChanged) {
             DrawCircleV(GetTouchPosition(i), 30, MAROON);
         }
     }
-        
+
+    // Drawn last, so the system's snapshot (and the app switcher) shows the pause
+    // instead of a frozen frame of the game
+    if (!focused) {
+        DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Fade(BLACK, 0.6f));
+        DrawText("PAUSED", GetScreenWidth()/2 - MeasureText("PAUSED", 40)/2, GetScreenHeight()/2 - 20, 40, RAYWHITE);
+    }
+
     EndDrawing();
 }
 
