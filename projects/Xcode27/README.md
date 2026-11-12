@@ -21,3 +21,14 @@ To use a prebuilt library instead, the stable releases of this repository (`6.0.
 - **Handle a resizable scene.** `UIRequiresFullScreen` is deprecated and logged a "will soon be ignored" warning at launch, so it is gone. During an interactive drag nothing is recomputed, as Apple recommends for games: `RecreatePlatformSurface()` keeps the surface size and stretches the presentation, while the scene delegate reports the interaction state and the new size is applied when the interaction ends.
 
 `ios_ready()` runs once per app launch and `ios_destroy()` once at termination: nothing tears the window down in between, and no other callback should.
+
+## App focus
+
+`IsWindowFocused()` works on iOS and Android too, not only on desktop: the flag is set when the app resigns active and cleared when it comes back. What differs from desktop is that the loop does not keep running while unfocused, so a game would never see the flag. The engine therefore grants **one frame** at the edge:
+
+- **iOS** - `sceneWillResignActive` sets the flag and calls `ios_update()` once, on the main thread, with the surface still alive.
+- **Android** - `APP_CMD_LOST_FOCUS` sets the flag and the event pump returns after the iteration that processed it; the next `PollInputEvents()` parks as usual. `APP_CMD_TERM_WINDOW` cancels the pending frame if the surface goes first.
+
+Inside that frame `IsWindowFocused()` is `false`. Pause there, paint what the system snapshots, and unfreeze on the first frame that reports `true` again - the rising edge is not an event (the loop is parked while the app is away), so keep one static to recognise it. The same code works on desktop, where the loop simply keeps running.
+
+Do **not** use `SetWindowState(FLAG_WINDOW_ALWAYS_RUN)` on Android to buy that frame: with it set the pump never parks again while the app is backgrounded.

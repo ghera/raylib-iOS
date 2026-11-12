@@ -63,6 +63,7 @@ typedef struct {
     struct android_poll_source *source; // Android events polling source
     bool appEnabled;                    // Flag to detect if app is active ** = true
     bool contextRebindRequired;         // Used to know context rebind required
+    bool focusFramePending;             // One frame still due after a focus loss, so the game can pause and paint it
 
     // Display data
     EGLDisplay device;                  // Native display device (physical screen connection)
@@ -800,6 +801,15 @@ void PollInputEvents(void)
             CORE.Window.shouldClose = true;
             break;
         }
+
+        // A focus loss was just processed: leave the pump so the game loop runs once
+        // more (with FLAG_WINDOW_UNFOCUSED set) and paints what the OS snapshots, then
+        // the next call parks as usual. Cleared here and nowhere else.
+        if (platform.focusFramePending)
+        {
+            platform.focusFramePending = false;
+            break;
+        }
     }
 }
 
@@ -1138,10 +1148,14 @@ static void AndroidCommandCallback(struct android_app *app, int32_t cmd)
         {
             platform.appEnabled = false;
             FLAG_SET(CORE.Window.flags, FLAG_WINDOW_UNFOCUSED);
+            platform.focusFramePending = true;      // The game gets one frame with IsWindowFocused() == false
             //PauseMusicStream();
         } break;
         case APP_CMD_TERM_WINDOW:
         {
+            // The surface is going: the pending focus frame is not worth painting
+            platform.focusFramePending = false;
+
             // Detach OpenGL context and destroy display surface
             // NOTE 1: This case is used when the user exits the app without closing it, context is detached to ensure everything is recoverable upon resuming
             // NOTE 2: Detaching context before destroying display surface avoids losing our resources (textures, shaders, VBOs...)
