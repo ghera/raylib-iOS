@@ -3,7 +3,7 @@
 Some people ported raylib to other languages in the form of bindings or wrappers to the library. Here is a list with all the ports available. Feel free to send a PR if you know of any binding/wrapper not in this list or if it had been updated/archived.
 
 # Recommendations for binding authors.
-This is a set of recomendations and guidelines for binding authors, meant to help your binding be as useful as possible to your users.
+This is a set of recommendations and guidelines for binding authors, meant to help your binding be as useful as possible to your users.
 
 * Binding should be reasonably up to date with the last release, out of date bindings may be removed from bindings.md
 * Binding should expose all of raylib's API. This is to ensure compatibility with all raylib features, and allow your users to do everything in the target language they can do in C raylib.
@@ -16,7 +16,7 @@ This is a set of recomendations and guidelines for binding authors, meant to hel
 * Bindings that expose additional 'high level' functions to make the binding more native to the host language, should also include the base C style API in addition to those other functions. This is requested in order to make it easier for people to understand the raylib API independent of the language being used.
 * Bindings should have clear usage and setup instructions. Examples in the host language are highly recommended. You want your users to be able to get started right away.
 * If a binding exists for a language, before making a new one, binding authors should try to work together on maintaining a single binding for a language, this is requested in order to prevent fragmentation and confusion for users.
-* Instructions on how to build for web are highly recomeneed if the langauge supports it. This allows your bindings to be used for game jams :)
+* Instructions on how to build for web are highly recommended if the language supports it. This allows your bindings to be used for game jams :)
 
 ### Language Bindings
 
@@ -61,6 +61,7 @@ This is a set of recomendations and guidelines for binding authors, meant to hel
 | [raylib-guile](https://github.com/petelliott/raylib-guile)                               | **auto**         | [Guile](https://www.gnu.org/software/guile)                             | Zlib                 |
 | [h-raylib](https://github.com/Anut-py/h-raylib)                                          | **6.1-dev**      | [Haskell](https://haskell.org)                                          | Apache-2.0           |
 | [raylib-hx](https://github.com/foreignsasquatch/raylib-hx)                               | 5.5              | [Haxe](https://haxe.org)                                                | Zlib                 |
+| [HolyRay](https://github.com/Iarlasa/HolyRay)                                            | **6.5-dev**      | [HolyC](https://holyc-lang.com/)                                        | GPL-3.0              |
 | [jaylib](https://github.com/janet-lang/jaylib)                                           | **5.0**          | [Janet](https://janet-lang.org)                                         | MIT                  |
 | [jaylib](https://github.com/electronstudio/jaylib/)                                      | **6.0**          | [Java](https://en.wikipedia.org/wiki/Java_(programming_language))       | GPLv3+CE             |
 | [raylib-j](https://github.com/CreedVI/Raylib-J)                                          | 4.2              | [Java](https://en.wikipedia.org/wiki/Java_(programming_language))       | Zlib                 |
@@ -81,7 +82,7 @@ This is a set of recomendations and guidelines for binding authors, meant to hel
 | [node-raylib](https://github.com/RobLoach/node-raylib)                                   | 5.5              | [Node.js](https://nodejs.org/en)                                        | Zlib                 |
 | [raylib-odin](https://github.com/odin-lang/Odin/tree/master/vendor/raylib)               | **6.0**          | [Odin](https://odin-lang.org)                                           | Zlib                 |
 | [raylib_odin_bindings](https://github.com/Deathbat2190/raylib_odin_bindings)             | 4.0-dev          | [Odin](https://odin-lang.org)                                           | MIT                  |
-| [raylib-ocaml](https://github.com/tjammer/raylib-ocaml)                                  | **6.0**          | [OCaml](https://ocaml.org)                                              | MIT                  |
+| [raylib-ocaml](https://github.com/tjammer/raylib-ocaml)                                  | **6.2**          | [OCaml](https://ocaml.org)                                              | MIT                  |
 | [TurboRaylib](https://github.com/turborium/TurboRaylib)                                  | 4.5              | [Object Pascal](https://en.wikipedia.org/wiki/Object_Pascal)            | MIT                  |
 | [Rayberon](https://github.com/RobertFlexx/Rayberon)                                      | **6.0**          | [Oberon-2](https://en.wikipedia.org/wiki/Oberon-2)                      | MIT                  |
 | [EuRaylib](https://github.com/gAndy50/EuRaylib6)                                         | **6.0**          | [openEuphoria](https://openeuphoria.org/)                               | Zlib                 |

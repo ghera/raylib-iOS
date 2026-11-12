@@ -288,6 +288,7 @@ typedef double              GLclampd;
 
 #define GL_REPEAT                           0x2901
 #define GL_CLAMP                            0x2900
+#define GL_CLAMP_TO_EDGE                    0x812F
 
 #define GL_TEXTURE_MAG_FILTER               0x2800
 #define GL_TEXTURE_MIN_FILTER               0x2801
@@ -770,6 +771,7 @@ SWAPI void swGetFramebufferAttachmentParameteriv(SWattachment attachment, SWatta
 #include <stdlib.h>         // Required for: malloc(), free()
 #include <stddef.h>         // Required for: NULL, size_t, uint8_t, uint16_t, uint32_t...
 #include <math.h>           // Required for: sinf(), cosf(), floorf(), fabsf(), sqrtf(), roundf()
+#include <string.h>         // Required for: memcpy()
 
 // Simple log system to avoid printf() calls if required
 // NOTE: Avoiding those calls, also avoids const strings memory usage
@@ -1403,12 +1405,16 @@ static SW_INLINE void sw_color8_to_color(float *SW_RESTRICT dst, const uint8_t *
     float32x4_t fvals = vmulq_f32(vcvtq_f32_u32(dwords), vdupq_n_f32(SW_INV_255));
     vst1q_f32(dst, fvals);
 #elif defined(SW_HAS_SSE41)
-    __m128i bytes = _mm_loadu_si32(src);
+    int packedColor = 0;
+    memcpy(&packedColor, src, sizeof(int));
+    __m128i bytes = _mm_cvtsi32_si128(packedColor);
     __m128 fvals = _mm_mul_ps(_mm_cvtepi32_ps(_mm_cvtepu8_epi32(bytes)), _mm_set1_ps(SW_INV_255));
     _mm_storeu_ps(dst, fvals);
 #elif defined(SW_HAS_SSE2)
     __m128i zero = _mm_setzero_si128();
-    __m128i bytes = _mm_loadu_si32(src);
+    int packedColor = 0;
+    memcpy(&packedColor, src, sizeof(int));
+    __m128i bytes = _mm_cvtsi32_si128(packedColor);
     __m128i words = _mm_unpacklo_epi8(bytes, zero);
     __m128i dwords = _mm_unpacklo_epi16(words, zero);
     __m128 fvals = _mm_mul_ps(_mm_cvtepi32_ps(dwords), _mm_set1_ps(SW_INV_255));
@@ -1441,13 +1447,15 @@ static SW_INLINE void sw_color_to_color8(uint8_t *SW_RESTRICT dst, const float *
     __m128i i32 = _mm_cvttps_epi32(fvals);
     __m128i i16 = _mm_packus_epi32(i32, i32);
     __m128i i8 = _mm_packus_epi16(i16, i16);
-    _mm_storeu_si32(dst, i8);
+    int packedColor = _mm_cvtsi128_si32(i8);
+    memcpy(dst, &packedColor, sizeof(int));
 #elif defined(SW_HAS_SSE2)
     __m128 fvals = _mm_mul_ps(_mm_loadu_ps(src), _mm_set1_ps(255.0f));
     __m128i i32 = _mm_cvttps_epi32(fvals);
     __m128i i16 = _mm_packs_epi32(i32, i32);
     __m128i i8 = _mm_packus_epi16(i16, i16);
-    _mm_storeu_si32(dst, i8);
+    int packedColor = _mm_cvtsi128_si32(i8);
+    memcpy(dst, &packedColor, sizeof(int));
 #elif defined(SW_HAS_RVV)
     // TODO: Implement RVV intrinsics
     // NOTE: RVV 1.0 specs define the use of __riscv_ prefix for instrinsic functions
@@ -2373,16 +2381,16 @@ static void sw_texture_sample_nearest(float *SW_RESTRICT color, const sw_texture
 
 #if RLSW_SUPPORT_NPOT_TEXTURE
     if (tex->sWrap == SW_REPEAT) x = (int)(sw_fract(u)*tex->width);
-    else x = (int)(sw_saturate(u)*tex->width);
+    else x = sw_clamp_int((int)(sw_saturate(u)*tex->width), 0, tex->wMinus1);
 
     if (tex->tWrap == SW_REPEAT) y = (int)(sw_fract(v)*tex->height);
-    else y = (int)(sw_saturate(v)*tex->height);
+    else y = sw_clamp_int((int)(sw_saturate(v)*tex->height), 0, tex->hMinus1);
 #else
     if (tex->sWrap == SW_REPEAT) x = (int)(u*tex->width) & tex->wMinus1;
-    else x = (int)(sw_saturate(u)*tex->width);
+    else x = sw_clamp_int((int)(sw_saturate(u)*tex->width), 0, tex->wMinus1);
 
     if (tex->tWrap == SW_REPEAT) y = (int)(v*tex->height) & tex->hMinus1;
-    else y = (int)(sw_saturate(v)*tex->height);
+    else y = sw_clamp_int((int)(sw_saturate(v)*tex->height), 0, tex->hMinus1);
 #endif
 
     tex->readColor(color, tex->pixels, y*tex->width + x);
@@ -2405,8 +2413,10 @@ static void sw_texture_sample_linear(float *SW_RESTRICT color, const sw_texture_
     if (tex->sWrap == SW_REPEAT)
     {
     #if RLSW_SUPPORT_NPOT_TEXTURE
-        x0 = (x0%tex->width + tex->width)%tex->width;
-        x1 = (x1%tex->width + tex->width)%tex->width;
+        x0 %= tex->width;
+        if (x0 < 0) x0 += tex->width; // The modulo result may be negative. If that's the case, shift x0 back to the range [0, width)
+        x1 = x0 + 1;
+        if (x1 == tex->width) x1 = 0; // If x1 goes past the right column, wrap back to 0
     #else
         x0 = x0 & tex->wMinus1;
         x1 = x1 & tex->wMinus1;
@@ -2421,8 +2431,10 @@ static void sw_texture_sample_linear(float *SW_RESTRICT color, const sw_texture_
     if (tex->tWrap == SW_REPEAT)
     {
     #if RLSW_SUPPORT_NPOT_TEXTURE
-        y0 = (y0%tex->height + tex->height)%tex->height;
-        y1 = (y1%tex->height + tex->height)%tex->height;
+        y0 %= tex->height;
+        if (y0 < 0) y0 += tex->height; // The modulo result may be negative. If that's the case, shift y0 back to the range [0, height)
+        y1 = y0 + 1;
+        if (y1 == tex->height) y1 = 0; // If y1 goes past the bottom row, wrap back to 0
     #else
         y0 = y0 & tex->hMinus1;
         y1 = y1 & tex->hMinus1;
@@ -4079,9 +4091,9 @@ void swGetIntegerv(SWget name, int *v)
 {
     switch (name)
     {
-        case SW_MODELVIEW_STACK_DEPTH: *v = SW_MODELVIEW_STACK_DEPTH; break;
-        case SW_PROJECTION_STACK_DEPTH: *v = SW_PROJECTION_STACK_DEPTH; break;
-        case SW_TEXTURE_STACK_DEPTH: *v = SW_TEXTURE_STACK_DEPTH; break;
+        case SW_MODELVIEW_STACK_DEPTH: *v = RLSW.stackModelviewCounter; break;
+        case SW_PROJECTION_STACK_DEPTH: *v = RLSW.stackProjectionCounter; break;
+        case SW_TEXTURE_STACK_DEPTH: *v = RLSW.stackTextureCounter; break;
         case SW_DRAW_FRAMEBUFFER_BINDING: *v = RLSW.boundFramebufferId; break;
         default: RLSW.errCode = SW_INVALID_ENUM; break;
     }
@@ -4359,7 +4371,7 @@ void swPopMatrix(void)
     {
         case SW_PROJECTION:
         {
-            if (RLSW.stackProjectionCounter <= 0)
+            if (RLSW.stackProjectionCounter <= 1)
             {
                 RLSW.errCode = SW_STACK_UNDERFLOW;
                 return;
@@ -4370,7 +4382,7 @@ void swPopMatrix(void)
         } break;
         case SW_MODELVIEW:
         {
-            if (RLSW.stackModelviewCounter <= 0)
+            if (RLSW.stackModelviewCounter <= 1)
             {
                 RLSW.errCode = SW_STACK_UNDERFLOW;
                 return;
@@ -4381,7 +4393,7 @@ void swPopMatrix(void)
         } break;
         case SW_TEXTURE:
         {
-            if (RLSW.stackTextureCounter <= 0)
+            if (RLSW.stackTextureCounter <= 1)
             {
                 RLSW.errCode = SW_STACK_UNDERFLOW;
                 return;
@@ -5053,6 +5065,9 @@ void swTexParameteri(int param, int value)
     }
 
     if (RLSW.boundTexture == NULL) return;
+
+    // Treat GL_CLAMP_TO_EDGE as GL_CLAMP
+    if (value == GL_CLAMP_TO_EDGE) value = GL_CLAMP;
 
     switch (param)
     {
