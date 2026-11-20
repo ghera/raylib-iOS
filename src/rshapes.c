@@ -2627,7 +2627,8 @@ void DrawEllipseLinesEx(Vector2 center, float radiusH, float radiusV, float thic
     float outerRadiusV = radiusV;
     float innerRadiusV = radiusV - thick;
 
-    if (thick >= 0.0f) {
+    if (thick >= 0.0f)
+    {
         // Just a filled-in ellipse
         if ((innerRadiusH <= 0.0f) || (innerRadiusV <= 0.0f))
         {

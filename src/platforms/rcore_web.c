@@ -890,13 +890,17 @@ const char *GetClipboardText(void)
 Image GetClipboardImage(void)
 {
     Image image = { 0 };
-    int w = 0, h = 0;
+    int width = 0;
+    int height = 0;
+    
     RequestClipboardData();
-    unsigned char* data = GetLastPastedImage(&w, &h);
-    if (data != NULL) {
+    unsigned char *data = GetLastPastedImage(&width, &height);
+    
+    if (data != NULL)
+    {
         image.data = data;
-        image.width = w;
-        image.height = h;
+        image.width = width;
+        image.height = height;
         image.mipmaps = 1;
         image.format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
     }
@@ -1574,7 +1578,13 @@ static void WindowIconifyCallback(GLFWwindow *window, int iconified)
 static void WindowFocusCallback(GLFWwindow *window, int focused)
 {
     if (focused) FLAG_CLEAR(CORE.Window.flags, FLAG_WINDOW_UNFOCUSED);  // The window was focused
-    else FLAG_SET(CORE.Window.flags, FLAG_WINDOW_UNFOCUSED);            // The window lost focus
+    else
+    {
+        FLAG_SET(CORE.Window.flags, FLAG_WINDOW_UNFOCUSED);            // The window lost focus
+        memset(CORE.Input.Mouse.currentButtonState, 0, sizeof(CORE.Input.Mouse.currentButtonState));
+        memset(CORE.Input.Touch.currentTouchState, 0, sizeof(CORE.Input.Touch.currentTouchState));
+        CORE.Input.Touch.pointCount = 0;
+    }
 }
 
 // GLFW3: Called on file-drop over the window
