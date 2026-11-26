@@ -168,6 +168,17 @@ extern "C" {
     #undef Size
 #endif
 
+#if defined(_WIN32)
+    #define WIN32_CLIPBOARD_IMPLEMENTATION
+    #define WINUSER_ALREADY_INCLUDED
+    #define WINBASE_ALREADY_INCLUDED
+    #define WINGDI_ALREADY_INCLUDED
+    #include "../external/win32_clipboard.h"
+#elif defined(__linux__) && defined(DRGFW_X11)
+    #include <X11/Xlib.h>
+    #include <X11/Xatom.h>
+#endif
+
 #include <stdbool.h>
 
 //----------------------------------------------------------------------------------
@@ -1307,27 +1318,17 @@ const char *GetClipboardText(void)
     return RGFW_readClipboard(NULL);
 }
 
-#if SUPPORT_CLIPBOARD_IMAGE
-#if defined(_WIN32)
-    #define WIN32_CLIPBOARD_IMPLEMENTATION
-    #define WINUSER_ALREADY_INCLUDED
-    #define WINBASE_ALREADY_INCLUDED
-    #define WINGDI_ALREADY_INCLUDED
-    #include "../external/win32_clipboard.h"
-#elif defined(__linux__) && defined(DRGFW_X11)
-    #include <X11/Xlib.h>
-    #include <X11/Xatom.h>
-#endif
-#endif
-
 // Get clipboard image
 Image GetClipboardImage(void)
 {
     Image image = { 0 };
 
-#if SUPPORT_CLIPBOARD_IMAGE && SUPPORT_MODULE_RTEXTURES
-#if defined(_WIN32)
+#if !SUPPORT_MODULE_RTEXTURES
+    TRACELOG(LOG_WARNING, "Clipboard image requires SUPPORT_MODULE_RTEXTURES to work");
+    return image;
+#endif
 
+#if defined(_WIN32)
     unsigned int dataSize = 0;
     void *fileData = NULL;
 
@@ -1339,12 +1340,9 @@ Image GetClipboardImage(void)
     else
     {
         image = LoadImageFromMemory(".bmp", (const unsigned char *)fileData, (int)dataSize);
-
         RL_FREE(fileData);
     }
-
 #elif defined(__linux__) && defined(DRGFW_X11)
-
     // REF: https://github.com/ColleagueRiley/Clipboard-Copy-Paste/blob/main/x11.c
     Display *dpy = XOpenDisplay(NULL);
     if (!dpy) return image;
@@ -1390,11 +1388,8 @@ Image GetClipboardImage(void)
     XDestroyWindow(dpy, win);
     XCloseDisplay(dpy);
 #else
-    TRACELOG(LOG_WARNING, "Clipboard image: PLATFORM_DESKTOP_RGFW doesn't implement GetClipboardImage() for this OS");
-#endif // _WIN32
-#else
-    TRACELOG(LOG_WARNING, "Clipboard image: SUPPORT_CLIPBOARD_IMAGE requires SUPPORT_MODULE_RTEXTURES to work properly");
-#endif // SUPPORT_CLIPBOARD_IMAGE
+    TRACELOG(LOG_WARNING, "Clipboard image not implemented on target platform");
+#endif
 
     return image;
 }
@@ -2042,8 +2037,8 @@ static KeyboardKey ConvertScancodeToKey(u32 keycode)
     return (KeyboardKey)RGFW_keyConvertTable[keycode];
 }
 
-// assign mouse to touches
-// 0-TOUCH_ACTION_UP, 1-TOUCH_ACTION_DOWN, 2-TOUCH_ACTION_MOVE
+// Assign mouse input events to touches
+// NOTE: 0-TOUCH_ACTION_UP, 1-TOUCH_ACTION_DOWN, 2-TOUCH_ACTION_MOVE
 void RemapMouseToTouch(int touchAction)
 {
     #if SUPPORT_GESTURES_SYSTEM

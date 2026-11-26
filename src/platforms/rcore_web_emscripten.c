@@ -864,12 +864,15 @@ EM_ASYNC_JS(void, RequestClipboardData, (void), {
 EM_JS(char *, GetLastPastedText, (void), {
     var str = window._lastClipboardString || "";
     var length = lengthBytesUTF8(str) + 1;
+    
     if (length > 1)
     {
         var ptr = _malloc(length);
         stringToUTF8(str, ptr, length);
+        
         return ptr;
     }
+
     return 0;
 });
 
@@ -885,7 +888,7 @@ EM_JS(unsigned char *, GetLastPastedImage, (int *width, int *height), {
 
             // Set the width and height via the pointers passed from C
             // HEAP32 handles the 4-byte integers
-            if (width)  setValue(width, window._lastImgWidth,  'i32');
+            if (width) setValue(width, window._lastImgWidth,  'i32');
             if (height) setValue(height, window._lastImgHeight, 'i32');
 
             // Clear the JS buffer so there is no need to fetch the same image twice
@@ -907,14 +910,30 @@ const char *GetClipboardText(void)
     return GetLastPastedText();
 }
 
+// Set clipboard image content
+bool SetClipboardImage(Image image)
+{
+    bool result = false;
+    
+    TRACELOG(LOG_WARNING, "SetClipboardImage() not implemented on target platform");
+    
+    return result;
+}
+
 // Get clipboard image
 Image GetClipboardImage(void)
 {
     Image image = { 0 };
+    
+#if !SUPPORT_MODULE_RTEXTURES
+    TRACELOG(LOG_WARNING, "Clipboard image requires SUPPORT_MODULE_RTEXTURES to work");
+    return image;
+#endif
+
+    RequestClipboardData();
+
     int width = 0; 
     int height = 0;
-    
-    RequestClipboardData();
     unsigned char *data = GetLastPastedImage(&width, &height);
     
     if (data != NULL)
@@ -1568,8 +1587,11 @@ static EM_BOOL EmscriptenKeyboardCallback(int eventType, const EmscriptenKeyboar
         } break;
         case EMSCRIPTEN_EVENT_KEYPRESS:
         {
+            unsigned int codepoint = keyboardEvent->charCode;
+            if ((codepoint < 32) || ((codepoint > 126) && (codepoint < 160))) break;
+
             // Check if there is space available in the queue for characters to be added
-            if ((keyboardEvent->charCode > 0) && (CORE.Input.Keyboard.charPressedQueueCount < MAX_CHAR_PRESSED_QUEUE))
+            if (CORE.Input.Keyboard.charPressedQueueCount < MAX_CHAR_PRESSED_QUEUE)
             {
                 CORE.Input.Keyboard.charPressedQueue[CORE.Input.Keyboard.charPressedQueueCount] = keyboardEvent->charCode;
                 CORE.Input.Keyboard.charPressedQueueCount++;
@@ -1710,8 +1732,8 @@ static EM_BOOL EmscriptenMouseWheelCallback(int eventType, const EmscriptenWheel
         if (wheelEvent->deltaMode == DOM_DELTA_LINE) wheelScale = 1.0f/3.0f;
         else if (wheelEvent->deltaMode == DOM_DELTA_PAGE) wheelScale = 80.0f;
 
-        CORE.Input.Mouse.currentWheelMove.x = (float)wheelEvent->deltaX*wheelScale;
-        CORE.Input.Mouse.currentWheelMove.y = -(float)wheelEvent->deltaY*wheelScale;
+        CORE.Input.Mouse.currentWheelMove.x -= (float)wheelEvent->deltaX*wheelScale;
+        CORE.Input.Mouse.currentWheelMove.y -= (float)wheelEvent->deltaY*wheelScale;
     }
 
     return 1; // The event was consumed by the callback handler

@@ -322,11 +322,9 @@ typedef struct CoreData {
 
         char **dropFilepaths;               // Store dropped files paths pointers (provided by GLFW)
         unsigned int dropFileCount;         // Count dropped files strings
-
     } Window;
     struct {
         const char *basePath;               // Base path for data storage
-
     } Storage;
     struct {
         struct {
@@ -343,7 +341,6 @@ typedef struct CoreData {
 
             int charPressedQueue[MAX_CHAR_PRESSED_QUEUE]; // Input characters queue (unicode)
             int charPressedQueueCount;      // Input characters queue count
-
         } Keyboard;
         struct {
             Vector2 offset;                 // Mouse offset
@@ -361,7 +358,6 @@ typedef struct CoreData {
             char previousButtonState[MAX_MOUSE_BUTTONS]; // Registers previous mouse button state
             Vector2 currentWheelMove;       // Registers current mouse wheel variation
             Vector2 previousWheelMove;      // Registers previous mouse wheel variation
-
         } Mouse;
         struct {
             int pointCount;                                 // Number of touch points active
@@ -370,7 +366,6 @@ typedef struct CoreData {
             Vector2 previousPosition[MAX_TOUCH_POINTS];     // Previous touch position on screen
             char currentTouchState[MAX_TOUCH_POINTS];       // Registers current touch state
             char previousTouchState[MAX_TOUCH_POINTS];      // Registers previous touch state
-
         } Touch;
         struct {
             int lastButtonPressed;          // Register last gamepad button pressed
@@ -380,9 +375,7 @@ typedef struct CoreData {
             char currentButtonState[MAX_GAMEPADS][MAX_GAMEPAD_BUTTONS];     // Current gamepad buttons state
             char previousButtonState[MAX_GAMEPADS][MAX_GAMEPAD_BUTTONS];    // Previous gamepad buttons state
             float axisState[MAX_GAMEPADS][MAX_GAMEPAD_AXES];                // Gamepad axes state
-
         } Gamepad;
-
     } Input;
     struct {
         double current;                     // Current time measure (seconds)
@@ -393,7 +386,6 @@ typedef struct CoreData {
         double target;                      // Desired time for one frame, if 0 not applied (seconds)
         unsigned long long base;            // Base time measure for hi-res timer (ticks or nanoseconds)
         unsigned int frameCounter;          // Frame counter (frames)
-
     } Time;
 } CoreData;
 
@@ -524,7 +516,7 @@ const char *TextFormat(const char *text, ...); // Formatting of text with variab
     #include "platforms/rcore_desktop_glfw.c"
 #elif defined(PLATFORM_DESKTOP_SDL)
     #include "platforms/rcore_desktop_sdl.c"
-#elif (defined(PLATFORM_DESKTOP_RGFW) || defined(PLATFORM_WEB_RGFW))
+#elif defined(PLATFORM_DESKTOP_RGFW) || defined(PLATFORM_WEB_RGFW)
     #include "platforms/rcore_desktop_rgfw.c"
 #elif defined(PLATFORM_DESKTOP_WIN32)
     #include "platforms/rcore_desktop_win32.c"
@@ -581,8 +573,17 @@ const char *TextFormat(const char *text, ...); // Formatting of text with variab
 //Vector2 GetMonitorPosition(int monitor)
 //const char *GetMonitorName(int monitor)
 
+// Clipboard interaction support
+// NOTE: Only working on SDL3, GLFW (Windows) and RGFW (Windows)
+// WARNING: It requires support for some additional flags:
+//  - SUPPORT_MODULE_RTEXTURES
+//  - SUPPORT_FILEFORMAT_BMP (Windows clipboard)
+//  - SUPPORT_FILEFORMAT_PNG (Wayland clipboard)
+//  - SUPPORT_FILEFORMAT_JPG
 //void SetClipboardText(const char *text)
 //const char *GetClipboardText(void)
+//bool SetClipboardImage(Image image)
+//Image GetClipboardImage(void)
 
 //void ShowCursor(void)
 //void HideCursor(void)
@@ -913,7 +914,7 @@ void EndDrawing(void)
         double waitTime = CORE.Time.current - CORE.Time.previous;
         CORE.Time.previous = CORE.Time.current;
 
-        CORE.Time.frame += waitTime;    // Total frame time: update + draw + wait
+        CORE.Time.frame += waitTime; // Total frame time: update + draw + wait
     }
 
     PollInputEvents();      // Poll user events (before next frame update)
@@ -1679,8 +1680,7 @@ void WaitTime(double seconds)
     // System halt functions
     #if defined(_WIN32)
         Sleep((unsigned long)(sleepSeconds*1000.0));
-    #endif
-    #if defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__EMSCRIPTEN__)
+    #elif defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__EMSCRIPTEN__)
         struct timespec req = { 0 };
         time_t sec = sleepSeconds;
         long nsec = (sleepSeconds - sec)*1000000000L;
@@ -1689,8 +1689,7 @@ void WaitTime(double seconds)
 
         // NOTE: Use nanosleep() on Unix platforms... usleep() it's deprecated
         while (nanosleep(&req, &req) == -1) continue;
-    #endif
-    #if defined(__APPLE__)
+    #elif defined(__APPLE__)
         usleep(sleepSeconds*1000000.0);
     #endif
 
@@ -2428,6 +2427,7 @@ bool IsFileExtension(const char *fileName, const char *ext)
 bool IsFileHidden(const char *filePath)
 {
     bool result = false;
+
 #if defined(_WIN32)
     unsigned long attribs = GetFileAttributesA(filePath);
 
@@ -2439,6 +2439,7 @@ bool IsFileHidden(const char *filePath)
 
     if ((basePath[0] == '.') && (strcmp(basePath, ".") != 0) && (strcmp(basePath, "..") != 0)) result = true;
 #endif
+
     return result;
 }
 
@@ -2696,9 +2697,7 @@ const char *GetApplicationDirectory(void)
         appDir[0] = '.';
         appDir[1] = '\\';
     }
-
 #elif defined(__linux__)
-
     unsigned int size = sizeof(appDir);
     ssize_t len = readlink("/proc/self/exe", appDir, size);
 
@@ -2718,9 +2717,7 @@ const char *GetApplicationDirectory(void)
         appDir[0] = '.';
         appDir[1] = '/';
     }
-
 #elif defined(__APPLE__)
-
     uint32_t size = sizeof(appDir);
 
     if (_NSGetExecutablePath(appDir, &size) == 0)
@@ -2740,9 +2737,7 @@ const char *GetApplicationDirectory(void)
         appDir[0] = '.';
         appDir[1] = '/';
     }
-
 #elif defined(__FreeBSD__)
-
     size_t size = sizeof(appDir);
     int mib[4] = {CTL_KERN, KERN_PROC, KERN_PROC_PATHNAME, -1};
 
@@ -2763,9 +2758,7 @@ const char *GetApplicationDirectory(void)
         appDir[0] = '.';
         appDir[1] = '/';
     }
-
 #elif defined(__wasm__)
-
     appDir[0] = '/';
 #endif
 
@@ -3206,7 +3199,7 @@ unsigned char *DecodeDataBase64(const char *text, int *outputSize)
     while ((ending >= 0) && (text[ending] == '=')) { padding++; ending--; }
     int estimatedOutputSize = 3*(dataSize/4) - padding;
     if (estimatedOutputSize < 0) estimatedOutputSize = 0;   // Invalid input, i.e. "QQ=" or "===="
-    int maxOutputSize = 3*(dataSize/4);
+    unsigned int maxOutputSize = 3*(dataSize/4);
 
     // Load some memory to store decoded data
     // NOTE: Allocated enough size to include padding
